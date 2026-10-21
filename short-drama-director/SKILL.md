@@ -21,6 +21,8 @@ description: "【漫剧老李AIGC 全流程Skill · V7.4.20 多技能套装版�
 
 ---
 
+> **编号 36 完整卡读取**：用户明确选诺兰后，运行 `scripts/style-lock-ladder.py --select 36` 或 `scripts/style-lock-recommend.py --select 36` 读取参数库及成品块；投喂输出须传入项目已确认的光比和焦距区间（详见 README「读取完整风格卡」）。不得把候选推荐视为选卡确认，不自动启用 P01，不改已有镜头设置；IMAX 四事实仍待审。
+
 ## ★ 使用入口（先读这条 · 用户视角）
 
 **用户只需要说一句话，剩下全自动。** 例如：

@@ -2323,8 +2323,8 @@ check("◓15 D锁首项独立弹出「① 末帧定格承接」且清零旧「�
       "① 末帧定格承接" in skill and "①+② 为连续剧情多段的默认组合" not in skill and "禁止合并为①+②" in skill)
 _dpl = read(os.path.join(_sb_dir, "director-param-library.md"))
 _spb = read(os.path.join(_sb_dir, "style-prefix-blocks.md"))
-check("◓16 画风锁参数库与成品块已补齐路阳+国漫3D仙侠/游戏CG/3D进阶水墨/东方神话3D等 14 张主力卡完整 11 槽位",
-      all(k in _dpl and k in _spb for k in ("徐克", "王家卫", "路阳", "袁和平", "乌尔善", "张艺谋", "朴赞郁", "大卫·芬奇", "罗杰·狄金斯", "MAPPA", "国漫3D仙侠", "暗黑神话游戏CG", "国漫3D进阶水墨", "东方神话3D奇幻")))
+check("◓16 画风锁参数库与成品块已补齐路阳+国漫3D仙侠/游戏CG/3D进阶水墨/东方神话3D及诺兰等 15 张主力卡完整 11 槽位",
+      all(k in _dpl and k in _spb for k in ("徐克", "王家卫", "路阳", "袁和平", "乌尔善", "张艺谋", "朴赞郁", "大卫·芬奇", "罗杰·狄金斯", "MAPPA", "国漫3D仙侠", "暗黑神话游戏CG", "国漫3D进阶水墨", "东方神话3D奇幻", "诺兰")))
 _sbl_txt = read(os.path.join(BASE, "references", "storyboard-board-lite.md"))
 check("◓17 看板契约与 model-adapters 已清除「不另写文字描述/P2.5空壳占位」误导并强制挂接 sd-asset-engine 三模板",
       "character-portrait-templates.md" in _sbl_txt and "scene-grid-template.md" in _sbl_txt and "prop-template.md" in _sbl_txt
@@ -2498,6 +2498,15 @@ _name_drift = [(n, nm, _cat_map[n]) for n, nm in _lad_pairs.items()
 check("◔16 ladder STYLES 卡名与选卡表目录同号位一致（堵 #61「引擎锡兰 vs 目录斯文·尼奎斯特」类漂移）",
       not _name_drift,
       "卡名漂移: " + "; ".join(f"#{n} {nm}≠{c}" for n, nm, c in _name_drift))
+
+# Selected-card contract: exercise real CLIs and the existing C23 parser.
+_style_tests = subprocess.run(
+    [sys.executable, "-m", "unittest", "discover", "-s", os.path.join(BASE, "tests")],
+    capture_output=True, text=True)
+if _style_tests.returncode:
+    print(_style_tests.stdout + _style_tests.stderr)
+    sys.exit(_style_tests.returncode)
+print("[+] 完整风格卡 CLI 回归通过")
 
 # ---------------------------------------------------------------- 汇总
 print()

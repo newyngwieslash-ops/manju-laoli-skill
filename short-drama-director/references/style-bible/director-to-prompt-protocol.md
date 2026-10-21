@@ -211,8 +211,8 @@
 |---|---|---|
 | `style-bible/director-to-prompt-protocol.md` | **本文件**：转译 + 植入 + 校验全链路 | 已出草案 |
 | `style-bible/style-fit-and-combat-matrix.md` | **题材适配矩阵**（打斗★/特效★/题材锁定 + 反向索引） | 已出草案 |
-| `style-bible/director-param-library.md` | **74 组的参数化正文**（每组的 11 槽位取值），按需分批 | 14 张主力卡（徐克/王家卫/路阳/袁和平/乌尔善/张艺谋/朴赞郁/芬奇/狄金斯/MAPPA）已出完整 11 槽位，余 62 组按模板即时组装 |
-| `style-bible/style-prefix-blocks.md` | 段 8/9 的可粘贴成品块（由 11 槽位组装） | 10 张主力卡（含路阳/袁和平/乌尔善/张艺谋/朴赞郁/芬奇/狄金斯/MAPPA）已出完整成品块 |
+| `style-bible/director-param-library.md` | **74 组的参数化正文**（每组的 11 槽位取值），按需分批 | 15 张主力卡（徐克/王家卫/路阳/袁和平/乌尔善/张艺谋/朴赞郁/芬奇/狄金斯/MAPPA/国漫3D仙侠/暗黑神话游戏CG/国漫3D进阶水墨/东方神话3D奇幻/诺兰）已出完整 11 槽位，余 59 组按模板即时组装 |
+| `style-bible/style-prefix-blocks.md` | 段 8/9 的可粘贴成品块（由 11 槽位组装） | 10 张主力卡（含路阳/袁和平/乌尔善/张艺谋/朴赞郁/芬奇/狄金斯/MAPPA/国漫3D仙侠/暗黑神话游戏CG/国漫3D进阶水墨/东方神话3D奇幻/诺兰）已出完整成品块 |
 | `scripts/validate_prompt.py` | 新增 C23a~**f** 实现（区间越界解析 + 题材越界查表 + 单镜超载） | 原型已跑通 5 用例，待搬入 |
 | `scripts/style-lock-recommend.py` | F 锁推荐引擎（题材路由 + 否定语境 + 能力标签） | 原型已跑通 5 用例 |
 
@@ -237,3 +237,7 @@
 - **无法解析的写法**（如"适度的光比"）→ C23a 报"区间不可解析"，要求改写
 
 > 这条很重要：区间一旦写成模糊中文，C23b 就废了，等于画风锁又白设。
+
+### 项目继承参数的工程卡
+
+编号 36 的完整卡允许光比、焦距标为项目待设定；这不是可投喂的数字区间，也不豁免 C23。用户明确选卡后，用 `scripts/style-lock-ladder.py --select 36` 或 `scripts/style-lock-recommend.py --select 36` 读取正文与模板；传入项目已确认的 `--light-range MIN MAX --lens-range MIN MAX --format prompt` 才能输出成品。未知数值不得以研究事实或品牌名补造。P01 不自动加载。

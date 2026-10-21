@@ -310,6 +310,8 @@ def recommend(text, top=4):
         lines.append(f"  {label} {tag}{name}向· {fam} {FAMILY_NAME[fam]} · {genre}")
         lines.append(f"      看得见：{look}")
         lines.append(f"      易跑偏：{warn}")
+        if num == 36:
+            lines.append("      完整卡与成品块：--select 36（确认选卡后读取）")
         fs = "★" * fight if fight else "—"
         xs = "★" * fx if fx else "—"
         lines.append(f"      打斗 {fs:<4} 特效 {xs:<4}    AI 落地度 {grade}")
@@ -387,6 +389,10 @@ def recommend(text, top=4):
 
 
 if __name__ == "__main__":
+    from style_card_loader import run_selection_cli
+    if run_selection_cli(STYLES, lambda text: print(recommend(text))):
+        raise SystemExit(0)
+
     cases = [
         "玄幻仙侠打斗，有法术特效",
         "都市情感夜戏，无打斗",

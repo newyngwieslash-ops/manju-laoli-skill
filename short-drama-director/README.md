@@ -175,3 +175,26 @@ short-drama-director/
 - 本包整理自 AI 短剧/漫剧工业化生产实践，供创作学习使用；
 - 涉及真实武术流派、历史地点仅作创作参考；
 - 输出内容需自行遵守所在平台的内容规范与版权要求。
+
+## 读取完整风格卡
+
+74 项选项目录中，15 项已有完整 11 槽位正文与成品块（新增编号 36 诺兰）；两个推荐程序的注册并集仍为 55 项。诺兰原有编号、T7 家族、星级及排序未改变。
+
+从仓库根目录运行（只输出文本，不写项目卡）：
+
+```bash
+python3 short-drama-director/scripts/style-lock-ladder.py --genre '真人 科幻 巨物 结构 战争'
+python3 short-drama-director/scripts/style-lock-ladder.py --select 36
+python3 short-drama-director/scripts/style-lock-recommend.py --select 36
+```
+
+`--select` 应在用户明确选卡后调用，输出完整卡与模板。编号 36 的光比、焦距继承项目设定，未知时不自动补值。以下仅为 CLI 调用示例，数值不是推荐默认值；请替换为项目已确认的区间：
+
+```bash
+python3 short-drama-director/scripts/style-lock-recommend.py --select 36 --format prompt --light-range 2 6 --lens-range 35 50
+python3 -m unittest discover -s short-drama-director/tests -v
+```
+
+`--light-range 2 6` 表示光比 1:2 至 1:6；`--lens-range 35 50` 表示焦距 35mm 至 50mm；当前 C23 焦距区间只支持整数 mm。缺值、负数、非有限数或反向区间会拒绝投喂输出。区间与分镜须一致，完整稿仍需现有 C23 与出稿质检。`--format prompt` 只输出零导演名的 STYLE 九行、PERFORMANCE 三行；不会追加研究文本或 P01。其余已有完整卡可按其注册编号读取，未完整参数化的编号会明确报错并指向补录模板。
+
+P01 仅在人工另行选择时作为旁注；不自动改默认 A 的 12 秒、两镜、无对白、首镜轻微横移、次镜固定。实际默认 A 文件未找到，未提供字段映射。四条 IMAX 研究仍待审；工程卡无模型实测、无官方认证，CLI 不生成视频。

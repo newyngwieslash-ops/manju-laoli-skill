@@ -201,6 +201,10 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.20 多技能套装（154 
 
 ---
 
+## 完整风格卡
+
+编号 36 诺兰现有完整工程卡与可输出的提示词块；[调用说明](short-drama-director/README.md#读取完整风格卡)。完整参数卡 15 项，风格目录仍为 74 项。
+
 ## 研究资料
 
 - [诺兰导演卡研究增补](docs/research/nolan/README.md)：四条 IMAX 事实待审，P01 为可选工程建议；不改生产执行卡或默认参数。
