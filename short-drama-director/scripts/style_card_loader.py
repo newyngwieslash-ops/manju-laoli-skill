@@ -38,7 +38,7 @@ def load_card(style_id):
 
 
 def _range(values, unit):
-    if values is None or len(values) != 2:
+    if not isinstance(values, (list, tuple)) or len(values) != 2:
         raise ValueError('区间必须恰好提供 MIN MAX 两个值')
     exact = []
     for value in values:
