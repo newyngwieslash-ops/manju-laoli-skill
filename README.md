@@ -201,15 +201,23 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.20 多技能套装（154 
 
 ---
 
+## 完整风格卡
+
+编号 36 诺兰与编号 68 押井守动画向（28 为兼容别名）现有完整工程卡与可输出的提示词块；[调用说明](short-drama-director/README.md#读取完整风格卡)。完整核心卡 16 项（另含兼容别名 28），风格目录仍为 74 项。
+
+## 研究资料
+
+- [诺兰导演卡研究增补](docs/research/nolan/README.md)：四条 IMAX 事实待审，P01 为可选工程建议；不改生产执行卡或默认参数。
+
 ## 📜 更新历史
 
 - **V7.4.20 多技能套装版**（2026-10-15）— **架构升级为「多技能套装」**：1 总控 + 12 子技能 · 四层纵深（L0 总控 / L1 决策 / L2 生产 / L3 交付）；规则库扩至 **48 份**（含 `style-bible/` 画风锁知识库 10 份），全包 **154 文件**；**〇·0 赛道分流**（含赛道② 海外剧 · 赛道③ 解说叙事）与 **〇·1 素材来源**（对标采风）正交可组合；**素材形态 M0/M1/M2 +《素材接线单》**（本包不持有图）；新增 **★场面调度**（`blocking-direction`）· **★故事板图·面板链** · **剧情分镜格** · **场景空间事实五件事**；机检扩至 **C1~C26**（子检查码 98 条，另设增量主码 C27 对话戏节奏 / C28 台词机械化 / C29 资产状态偏离 / C30 外挂指纹与交接探针）、H3 支线 **H1~H12**；投喂层新增**六道闸门**（含素材形态一致性）
-- **V6.9.8 轻量版**（2026-09-20）— 新增 **MiniMax H3 格式支线**：A 锁并列第三选项，只做「七段式 → H3 原生格式」转换（`h3-adapter.md`：两 checkpoint 路由 / 六段式映射 / 素材上限 9 图·3 视频·3 音频·总 12 / 9 张取材策略 / 两套投喂载荷）；出稿机检新增 **H1~H12**（`--model h3`）
-- **V6.9.3 ~ V6.9.7 轻量版**（2026-09-19）— 五轮实拍复盘驱动的定向修订：**对白语气位**（C16）· **人物账连续·摆位必入画**（C17）· **首镜锚定·景别一致·姿态延续·视线指派**（C18）· **禁令失效三改法 + 栏目纪律**（C19 / C19e）· **首镜单主体锚定与具象化**（C20）· **示范句验证纪律**；机检升至 C1~C20
-- **V6.9 轻量版**（2026-09-18）— 新增 **〇节 D·段缝衔接方式三选一锁** / **旁白·独白视听编织规程**（OS 声画分离红线 · VO 冷漠审视）/ **时长守恒·禁拉伸凑满**
-- **V6.8 轻量版**（2026-09-15）— 可灵移出正式支持（降级 LEGACY）/ 角色资产统一 **4 View** / 空间 S0~S4 · 资产 A0~A3 · FACS **三级按需触发** / 2.5 新增**任务模式二选一**
-- **V6.7 轻量版**（2026-09-14）— 双锁同规格（模型版本 + 画幅三选一强制锁）/ 按官方文档校准 Seedance 2.5 / 吸收 FACS 微表情引擎三件套 / 吸收轻量离线分镜看板
-- **V6.5 Multi-Agent**（2026-09-01）— Asset-First 六阶段 + 多 Agent 平台适配 + Seedance 2.5 深度适配 + 静止段禁用铁律
+- LEGACY · **V6.9.8 轻量版**（2026-09-20）— 新增 **MiniMax H3 格式支线**：A 锁并列第三选项，只做「七段式 → H3 原生格式」转换（`h3-adapter.md`：两 checkpoint 路由 / 六段式映射 / 素材上限 9 图·3 视频·3 音频·总 12 / 9 张取材策略 / 两套投喂载荷）；出稿机检新增 **H1~H12**（`--model h3`）
+- LEGACY · **V6.9.3 ~ V6.9.7 轻量版**（2026-09-19）— 五轮实拍复盘驱动的定向修订：**对白语气位**（C16）· **人物账连续·摆位必入画**（C17）· **首镜锚定·景别一致·姿态延续·视线指派**（C18）· **禁令失效三改法 + 栏目纪律**（C19 / C19e）· **首镜单主体锚定与具象化**（C20）· **示范句验证纪律**；机检升至 C1~C20
+- LEGACY · **V6.9 轻量版**（2026-09-18）— 新增 **〇节 D·段缝衔接方式三选一锁** / **旁白·独白视听编织规程**（OS 声画分离红线 · VO 冷漠审视）/ **时长守恒·禁拉伸凑满**
+- LEGACY · **V6.8 轻量版**（2026-09-15）— 可灵移出正式支持（降级 LEGACY）/ 角色资产统一 **4 View** / 空间 S0~S4 · 资产 A0~A3 · FACS **三级按需触发** / 2.5 新增**任务模式二选一**
+- LEGACY · **V6.7 轻量版**（2026-09-14）— 双锁同规格（模型版本 + 画幅三选一强制锁）/ 按官方文档校准 Seedance 2.5 / 吸收 FACS 微表情引擎三件套 / 吸收轻量离线分镜看板
+- LEGACY · **V6.5 Multi-Agent**（2026-09-01）— Asset-First 六阶段 + 多 Agent 平台适配 + Seedance 2.5 深度适配 + 静止段禁用铁律
 - 旧版归档：[**manju-laoli-skill-legacy**](https://github.com/lixiaoxiao9888-create/manju-laoli-skill-legacy)
 
 ---
@@ -377,12 +385,12 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.20 multi-skill suite (154
 ## 📜 Changelog
 
 - **V7.4.20 Multi-Skill Suite** (2026-10-15) — **architecture upgraded to a multi-skill suite**: 1 router + 12 sub-skills across four layers; rulebooks grow to **48** (incl. 10 in `style-bible/`), **154 files** total; **〇·0 track routing** (overseas ② · explainer ③) and **〇·1 sourcing** (benchmark recon) orthogonal; **asset existence form M0/M1/M2 + wiring sheet** (no images held); new ★blocking direction · ★storyboard sheets · plot-deduction grid · scene-spatial facts; lint extended to **C1~C26** (98 sub-codes; incremental C27–C30) and H3 **H1–H12**; feed layer gains **six gates** (incl. asset-form consistency)
-- **V6.9.8 Lite** (2026-09-20) — adds the **MiniMax H3 format branch**; shot-level lint gains **H1–H12** (`--model h3`)
-- **V6.9.3 – V6.9.7 Lite** (2026-09-19) — five rounds of retro-driven revisions; lint raised to C1–C20
-- **V6.9 Lite** (2026-09-18) — D-lock three-way seam joining · narration/inner-monologue weaving · duration conservation
-- **V6.8 Lite** (2026-09-15) — Kling demoted to LEGACY / 4-View assets / S0–S4 · A0–A3 · FACS on-demand / 2.5 task modes
-- **V6.7 Lite** (2026-09-14) — equal-weight dual locks / Seedance 2.5 calibrated / FACS + offline board absorbed
-- **V6.5 Multi-Agent** (2026-09-01) — Asset-First 6 stages + multi-agent adapters
+- LEGACY · **V6.9.8 Lite** (2026-09-20) — adds the **MiniMax H3 format branch**; shot-level lint gains **H1–H12** (`--model h3`)
+- LEGACY · **V6.9.3 – V6.9.7 Lite** (2026-09-19) — five rounds of retro-driven revisions; lint raised to C1–C20
+- LEGACY · **V6.9 Lite** (2026-09-18) — D-lock three-way seam joining · narration/inner-monologue weaving · duration conservation
+- LEGACY · **V6.8 Lite** (2026-09-15) — Kling demoted to LEGACY / 4-View assets / S0–S4 · A0–A3 · FACS on-demand / 2.5 task modes
+- LEGACY · **V6.7 Lite** (2026-09-14) — equal-weight dual locks / Seedance 2.5 calibrated / FACS + offline board absorbed
+- LEGACY · **V6.5 Multi-Agent** (2026-09-01) — Asset-First 6 stages + multi-agent adapters
 - Legacy archive: [**manju-laoli-skill-legacy**](https://github.com/lixiaoxiao9888-create/manju-laoli-skill-legacy)
 
 ---
