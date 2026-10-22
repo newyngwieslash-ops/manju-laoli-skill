@@ -5,6 +5,10 @@ from pathlib import Path
 import re
 import sys
 
+# Compatibility IDs resolve to one maintained core, not extra cards.
+CARD_ALIASES = {28: 68}
+INHERITED_RANGE_IDS = (36, 68)
+
 STYLE_DIR = Path(__file__).resolve().parents[1] / 'references' / 'style-bible'
 
 
@@ -19,6 +23,8 @@ def _section(text, predicate):
 def load_card(style_id):
     if type(style_id) is not int or style_id <= 0:
         raise ValueError("风格编号必须为正整数，不接受字符串或布尔值")
+    requested_id = style_id
+    style_id = CARD_ALIASES.get(style_id, style_id)
     pattern = rf'编号\s*0?{style_id}(?!\d)'
     card = _section((STYLE_DIR / 'director-param-library.md').read_text(encoding='utf-8'),
                     lambda h: bool(re.search(pattern, h)))
@@ -32,14 +38,16 @@ def load_card(style_id):
     blocks = re.findall(r'```text\n(.*?)\n```', block, re.S)
     if len(blocks) != 2 or not blocks[0].startswith('【STYLE｜') or not blocks[1].startswith('【PERFORMANCE｜'):
         raise ValueError('成品块必须包含 STYLE 和 PERFORMANCE 两段')
-    if style_id == 36 and [len(b.splitlines()) for b in blocks] != [10, 4]:
-        raise ValueError('编号 36 必须保持 STYLE 九行和 PERFORMANCE 三行')
-    if style_id == 36:
+    if style_id in INHERITED_RANGE_IDS and [len(b.splitlines()) for b in blocks] != [10, 4]:
+        raise ValueError(f'编号 {style_id} 必须保持 STYLE 九行和 PERFORMANCE 三行')
+    if style_id in INHERITED_RANGE_IDS:
         for label, token in (("影调区间：光比 ", "{{LIGHT_RANGE}}"),
                              ("光学区间：镜头 ", "{{LENS_RANGE}}")):
             if sum(b.count(token) for b in blocks) != 1 or not any(
                     line.startswith(label + token) for line in blocks[0].splitlines()):
-                raise ValueError("编号 36 的项目区间占位符缺失、重复或槽位错误")
+                raise ValueError(f"编号 {style_id} 的项目区间占位符缺失、重复或槽位错误")
+    if requested_id != style_id:
+        card = f'> 兼容编号 {requested_id} → 核心编号 {style_id}；同一卡，不另计数量。\n\n' + card
     return card, block, '\n\n'.join(blocks)
 
 
@@ -77,18 +85,19 @@ def render_selection(style_id, output='card', light=None, lens=None):
     if output not in ('card', 'prompt'):
         raise ValueError('输出格式仅支持 card 或 prompt')
     card, block, prompt = load_card(style_id)
+    style_id = CARD_ALIASES.get(style_id, style_id)
     if output == 'card':
         if light is not None or lens is not None:
             raise ValueError('区间参数仅用于 --format prompt，避免误以为已经应用')
         return card + '\n\n' + block
-    if style_id == 36:
+    if style_id in INHERITED_RANGE_IDS:
         if light is None or lens is None:
-            raise ValueError('诺兰投喂块需要项目已确认的 --light-range 和 --lens-range；未知值不自动补造')
+            raise ValueError(f'编号 {style_id} 投喂块需要项目已确认的 --light-range 和 --lens-range；未知值不自动补造')
         prompt = prompt.replace('{{LIGHT_RANGE}}', _range(light, 'ratio'))
         prompt = prompt.replace('{{LENS_RANGE}}', _range(lens, 'mm'))
     elif light is not None or lens is not None:
-        raise ValueError('区间覆盖仅适用于编号 36；其他卡保持既有正文')
-    if style_id == 36:
+        raise ValueError('区间输入仅适用于项目继承卡（36、68及别名28）；其他卡保持既有正文')
+    if style_id in INHERITED_RANGE_IDS:
         if '{{' in prompt or any(len(line) > 42 for line in prompt.splitlines()):
             raise ValueError('数值区间超出成品块 42 字行宽，无法输出；请核对项目参数')
     return prompt
@@ -111,7 +120,8 @@ def run_selection_cli(styles, render_recommendation):
             parser.error('--genre 不接受选卡输出参数')
         render_recommendation(args.genre)
         return True
-    if args.select not in {s[0] for s in styles}:
+    registered = {s[0] for s in styles}
+    if args.select not in registered and CARD_ALIASES.get(args.select) not in registered:
         parser.error('该编号未在此入口注册')
     try:
         print(render_selection(args.select, args.format, args.light_range, args.lens_range))

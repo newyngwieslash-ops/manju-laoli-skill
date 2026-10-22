@@ -75,8 +75,8 @@ class SelectionTests(unittest.TestCase):
             self.assertEqual(self.cli(entry, '--genre', '战争 史诗').returncode, 0)
             self.assertEqual(self.cli(entry, '--select', '9', '--format', 'prompt').returncode, 0)
 
-    def test_fifteen_cards_and_existing_blocks(self):
-        ids = [9, 10, 7, 12, 6, 1, 33, 39, 52, 64, 65, 66, 71, 72, 36]
+    def test_sixteen_core_cards_and_existing_blocks(self):
+        ids = [9, 10, 7, 12, 6, 1, 33, 39, 52, 64, 65, 66, 71, 72, 36, 68]
         for style_id in ids:
             card, block, prompt = load_card(style_id)
             self.assertIn('【STYLE', prompt)
@@ -84,7 +84,7 @@ class SelectionTests(unittest.TestCase):
         text = (ROOT / 'references/style-bible/director-param-library.md').read_text()
         rows = re.findall(r'^\|\s*\*\*(\d+) [^|]+\|\s*T\d\s', text, re.M)
         self.assertEqual(set(map(int, rows)), set(ids))
-        self.assertEqual(len(rows), 15)
+        self.assertEqual(len(rows), 16)
         catalog = (ROOT / 'references/style-bible/director-style-catalog-74.md').read_text()
         self.assertEqual(len(re.findall(r'^\| \d+ \| \*\*', catalog, re.M)), 74)
 

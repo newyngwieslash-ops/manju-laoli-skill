@@ -178,7 +178,7 @@ short-drama-director/
 
 ## 读取完整风格卡
 
-74 项选项目录中，15 项已有完整 11 槽位正文与成品块（新增编号 36 诺兰）；两个推荐程序的注册并集仍为 55 项。诺兰原有编号、T7 家族、星级及排序未改变。
+74 项选项目录中，16 张核心卡已有完整 11 槽位正文与成品块（含编号 36 诺兰、68 押井守动画向）；28 为 68 的兼容别名；两个推荐程序的注册并集仍为 55 项。诺兰原有编号、T7 家族、星级及排序未改变。
 
 从仓库根目录运行（只输出文本，不写项目卡）：
 
@@ -188,7 +188,7 @@ python3 short-drama-director/scripts/style-lock-ladder.py --select 36
 python3 short-drama-director/scripts/style-lock-recommend.py --select 36
 ```
 
-`--select` 应在用户明确选卡后调用，输出完整卡与模板。编号 36 的光比、焦距继承项目设定，未知时不自动补值。以下仅为 CLI 调用示例，数值不是推荐默认值；请替换为项目已确认的区间：
+`--select` 应在用户明确选卡后调用，输出完整卡与模板。编号 36、68（含别名 28）的光比、焦距继承项目设定，未知时不自动补值。以下仅为 CLI 调用示例，数值不是推荐默认值；请替换为项目已确认的区间：
 
 ```bash
 python3 short-drama-director/scripts/style-lock-recommend.py --select 36 --format prompt --light-range 2 6 --lens-range 35 50
@@ -198,3 +198,15 @@ python3 -m unittest discover -s short-drama-director/tests -v
 `--light-range 2 6` 表示光比 1:2 至 1:6；`--lens-range 35 50` 表示焦距 35mm 至 50mm；当前 C23 焦距区间只支持整数 mm。缺值、负数、非有限数或反向区间会拒绝投喂输出。CLI 按十进制原文精确解析，不经浮点数舍入；超长、极端数值或超过既有 42 字行宽的区间也会拒绝，且不输出部分提示词。此限制服务于文本结构，并非器材性能范围。区间与分镜须一致，完整稿仍需现有 C23 与出稿质检。`--format prompt` 只输出零导演名的 STYLE 九行、PERFORMANCE 三行；不会追加研究文本或 P01。其余已有完整卡可按其注册编号读取，未完整参数化的编号会明确报错并指向补录模板。
 
 P01 仅在人工另行选择时作为旁注；不自动改默认 A 的 12 秒、两镜、无对白、首镜轻微横移、次镜固定。实际默认 A 文件未找到，未提供字段映射。四条 IMAX 研究仍待审；工程卡无模型实测、无官方认证，CLI 不生成视频。
+
+
+### 押井守完整卡与兼容编号
+
+#68「押井守动画向」为唯一维护核心，#28「押井守」为兼容别名；两个入口均可选，不解释成真人分型。完整核心卡从 15 增至 16，含别名可读取 17 个目录编号，74 个目录编号中剩余 57 个待补录。注册集合仍为 ladder 48、recommend 44、并集 55，推荐排序不变。
+
+```bash
+python short-drama-director/scripts/style-lock-ladder.py --select 28 --format card
+python short-drama-director/scripts/style-lock-recommend.py --select 68 --format prompt --light-range 2 6 --lens-range 35 50
+```
+
+以上从仓库根目录运行；数字仅为调用演示，不是默认值或导演参数。实际投喂须改为项目确认值，缺值拒绝输出。#28 与 #68 的 prompt 相同。模板不强制冷调、长焦、静止或混合工艺；遵从已有资产、声音、时长、镜数与运动。STYLE/PERFORMANCE 是完整投喂稿的组成部分，仍须模型适配与全部前置锁。来源、作品差异、许可边界与字段推导见 [研究说明](../docs/research/oshii/README.md)。未进行模型或视频验证。

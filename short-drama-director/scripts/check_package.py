@@ -2323,8 +2323,8 @@ check("◓15 D锁首项独立弹出「① 末帧定格承接」且清零旧「�
       "① 末帧定格承接" in skill and "①+② 为连续剧情多段的默认组合" not in skill and "禁止合并为①+②" in skill)
 _dpl = read(os.path.join(_sb_dir, "director-param-library.md"))
 _spb = read(os.path.join(_sb_dir, "style-prefix-blocks.md"))
-check("◓16 画风锁参数库与成品块已补齐路阳+国漫3D仙侠/游戏CG/3D进阶水墨/东方神话3D及诺兰等 15 张主力卡完整 11 槽位",
-      all(k in _dpl and k in _spb for k in ("徐克", "王家卫", "路阳", "袁和平", "乌尔善", "张艺谋", "朴赞郁", "大卫·芬奇", "罗杰·狄金斯", "MAPPA", "国漫3D仙侠", "暗黑神话游戏CG", "国漫3D进阶水墨", "东方神话3D奇幻", "诺兰")))
+check("◓16 画风锁参数库与成品块已补齐路阳+国漫3D仙侠/游戏CG/3D进阶水墨/东方神话3D及诺兰、押井守等 16 张主力卡完整 11 槽位",
+      all(k in _dpl and k in _spb for k in ("徐克", "王家卫", "路阳", "袁和平", "乌尔善", "张艺谋", "朴赞郁", "大卫·芬奇", "罗杰·狄金斯", "MAPPA", "国漫3D仙侠", "暗黑神话游戏CG", "国漫3D进阶水墨", "东方神话3D奇幻", "诺兰", "押井守")))
 _sbl_txt = read(os.path.join(BASE, "references", "storyboard-board-lite.md"))
 check("◓17 看板契约与 model-adapters 已清除「不另写文字描述/P2.5空壳占位」误导并强制挂接 sd-asset-engine 三模板",
       "character-portrait-templates.md" in _sbl_txt and "scene-grid-template.md" in _sbl_txt and "prop-template.md" in _sbl_txt
@@ -2443,9 +2443,14 @@ check("◔8 参数库章节号唯一（防「十二/十三/十四 各出现两�
 _rest = re.search(r"其余\s*(\d+)\s*组的扩展补录模板", _par)
 _rest = int(_rest.group(1)) if _rest else -1
 _main_cards = len(re.findall(r"^\|\s*\*\*\d+ [^|]+\|\s*T\d\s", _par, re.M))
-check("◔9 参数库补录算式自洽：其余 N == 选卡表卡数 − 已参数化主力卡数",
-      _rest == _cat_total - _main_cards and _main_cards > 0,
-      f"其余 {_rest} 组 vs 实算 {_cat_total} − {_main_cards} = {_cat_total - _main_cards}")
+from style_card_loader import CARD_ALIASES
+_core_ids = {int(x) for x in re.findall(r"^\|\s*\*\*(\d+) [^|]+\|\s*T\d\s", _par, re.M)}
+_catalog_ids = {int(x) for x in re.findall(r"^\|\s*(\d+)\s*\|", _cat, re.M)}
+_aliases_valid = all(a in _catalog_ids and a not in _core_ids and c in _core_ids
+                     for a, c in CARD_ALIASES.items())
+check("◔9 参数库补录算式自洽：其余 N == 目录数 − 核心卡数 − 兼容别名数",
+      _aliases_valid and _rest == _cat_total - _main_cards - len(CARD_ALIASES) and _main_cards > 0,
+      f"其余 {_rest} 组 vs {_cat_total} − {_main_cards} − {len(CARD_ALIASES)}")
 
 # ---- ④ 跨文件数字唯一 + 红线 2 交叉引用 ----
 check("◔10 全包不得残留「72 组」旧口径（选卡表已 74 组）",

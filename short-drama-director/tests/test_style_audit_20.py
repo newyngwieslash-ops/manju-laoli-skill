@@ -17,7 +17,7 @@ ROOT = Path(os.environ.get('STYLE_AUDIT_ROOT', Path(__file__).resolve().parents[
 sys.path.insert(0, str(ROOT / 'scripts'))
 import style_card_loader as loader
 ENTRIES = ('style-lock-ladder', 'style-lock-recommend')
-CARD_IDS = [9,10,7,12,6,1,33,39,52,64,65,66,71,72,36]
+CARD_IDS = [9,10,7,12,6,1,33,39,52,64,65,66,71,72,36,68]
 
 @contextlib.contextmanager
 def style_copy():
@@ -89,12 +89,12 @@ class StyleAudit20(unittest.TestCase):
     def test_R07_fenced_block_count_and_order(self):
         for mutation in ('extra','reverse'):
             with style_copy() as d:
-                p=d/'style-prefix-blocks.md';text=p.read_text();pos=text.index('<!-- style-block:36:start -->');tail=text[pos:]
+                p=d/'style-prefix-blocks.md';text=p.read_text();pos=text.index('<!-- style-block:36:start -->');end=text.index('<!-- style-block:36:end -->',pos);tail=text[pos:end]
                 if mutation=='extra': tail+='\n```text\nextra\n```\n'
                 else:
                     blocks=re.findall(r'```text\n.*?\n```',tail,re.S)
                     tail=tail.replace(blocks[0],'PLACEHOLDER').replace(blocks[1],blocks[0]).replace('PLACEHOLDER',blocks[1])
-                p.write_text(text[:pos]+tail)
+                p.write_text(text[:pos]+tail+text[end:])
                 with self.assertRaises(ValueError): loader.load_card(36)
 
     def copied_cli(self, mutate):
@@ -181,11 +181,11 @@ class StyleAudit20(unittest.TestCase):
         for entry in ENTRIES:
             rows=read_module(entry).STYLES
             for row in rows:
-                if row[0] in CARD_IDS:
+                if row[0] in CARD_IDS or row[0] in loader.CARD_ALIASES:
                     card,block,prompt=loader.load_card(row[0]);self.assertIn('【STYLE｜',prompt)
                 else:
                     with self.assertRaises(ValueError): loader.load_card(row[0])
-        self.assertEqual(len(CARD_IDS),15)
+        self.assertEqual(len(CARD_IDS),16)
 
     def test_R19_research_is_not_prompt_input(self):
         expected=loader.render_selection(36,'prompt',[2,6],[35,50])
