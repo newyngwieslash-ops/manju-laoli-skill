@@ -10,7 +10,7 @@ STYLE_DIR = Path(__file__).resolve().parents[1] / 'references' / 'style-bible'
 
 def _section(text, predicate):
     sections = re.split(r'(?m)(?=^## )', text)
-    matches = [s.strip() for s in sections if predicate(s.splitlines()[0])]
+    matches = [s.strip() for s in sections if s.strip() and predicate(s.splitlines()[0])]
     if len(matches) != 1:
         raise ValueError('未找到唯一完整卡；请按参数库补录模板人工组装，不生成伪造参数')
     return matches[0]
