@@ -17,6 +17,8 @@ def _section(text, predicate):
 
 
 def load_card(style_id):
+    if type(style_id) is not int or style_id <= 0:
+        raise ValueError("风格编号必须为正整数，不接受字符串或布尔值")
     pattern = rf'编号\s*0?{style_id}(?!\d)'
     card = _section((STYLE_DIR / 'director-param-library.md').read_text(encoding='utf-8'),
                     lambda h: bool(re.search(pattern, h)))
