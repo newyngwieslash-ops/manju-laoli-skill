@@ -23,12 +23,14 @@ class ControlledIterationTests(unittest.TestCase):
     def test_frozen_old_cards_and_recommendations(self):
         fixture = json.loads((ROOT / 'tests/fixtures/style_before.json').read_text())
         digest = lambda s: hashlib.sha256(s.encode()).hexdigest()
+        registries = json.loads((ROOT / 'tests/fixtures/style_registries_before.json').read_text())['registries']
         for sid, expected in fixture['old_prompts'].items():
             self.assertEqual(digest(loader.load_card(int(sid))[2]), expected, sid)
             for entry in ENTRIES:
                 # Not every complete card is registered in both historical entrypoints.
                 result = self.cli(entry, '--select', sid, '--format', 'prompt')
-                if result.returncode == 0:
+                if sid in registries[entry]:
+                    self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertEqual(digest(result.stdout.rstrip('\n')), expected, (entry, sid))
                 else:
                     self.assertEqual(result.returncode, 2)
