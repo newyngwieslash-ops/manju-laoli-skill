@@ -34,6 +34,12 @@ def load_card(style_id):
         raise ValueError('成品块必须包含 STYLE 和 PERFORMANCE 两段')
     if style_id == 36 and [len(b.splitlines()) for b in blocks] != [10, 4]:
         raise ValueError('编号 36 必须保持 STYLE 九行和 PERFORMANCE 三行')
+    if style_id == 36:
+        for label, token in (("影调区间：光比 ", "{{LIGHT_RANGE}}"),
+                             ("光学区间：镜头 ", "{{LENS_RANGE}}")):
+            if sum(b.count(token) for b in blocks) != 1 or not any(
+                    line.startswith(label + token) for line in blocks[0].splitlines()):
+                raise ValueError("编号 36 的项目区间占位符缺失、重复或槽位错误")
     return card, block, '\n\n'.join(blocks)
 
 
