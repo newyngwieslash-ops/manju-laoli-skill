@@ -195,6 +195,6 @@ python3 short-drama-director/scripts/style-lock-recommend.py --select 36 --forma
 python3 -m unittest discover -s short-drama-director/tests -v
 ```
 
-`--light-range 2 6` 表示光比 1:2 至 1:6；`--lens-range 35 50` 表示焦距 35mm 至 50mm；当前 C23 焦距区间只支持整数 mm。缺值、负数、非有限数或反向区间会拒绝投喂输出。区间与分镜须一致，完整稿仍需现有 C23 与出稿质检。`--format prompt` 只输出零导演名的 STYLE 九行、PERFORMANCE 三行；不会追加研究文本或 P01。其余已有完整卡可按其注册编号读取，未完整参数化的编号会明确报错并指向补录模板。
+`--light-range 2 6` 表示光比 1:2 至 1:6；`--lens-range 35 50` 表示焦距 35mm 至 50mm；当前 C23 焦距区间只支持整数 mm。缺值、负数、非有限数或反向区间会拒绝投喂输出。CLI 按十进制原文精确解析，不经浮点数舍入；超长、极端数值或超过既有 42 字行宽的区间也会拒绝，且不输出部分提示词。此限制服务于文本结构，并非器材性能范围。区间与分镜须一致，完整稿仍需现有 C23 与出稿质检。`--format prompt` 只输出零导演名的 STYLE 九行、PERFORMANCE 三行；不会追加研究文本或 P01。其余已有完整卡可按其注册编号读取，未完整参数化的编号会明确报错并指向补录模板。
 
 P01 仅在人工另行选择时作为旁注；不自动改默认 A 的 12 秒、两镜、无对白、首镜轻微横移、次镜固定。实际默认 A 文件未找到，未提供字段映射。四条 IMAX 研究仍待审；工程卡无模型实测、无官方认证，CLI 不生成视频。

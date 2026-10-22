@@ -1,7 +1,6 @@
 """Read full style cards from the authoritative Markdown; never write project state."""
 import argparse
-from decimal import Decimal
-import math
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 import re
 import sys
@@ -29,21 +28,46 @@ def load_card(style_id):
     if rows != [str(i) for i in range(1, 12)]:
         raise ValueError('完整卡槽位必须为 1 至 11，且不得重号')
     blocks = re.findall(r'```text\n(.*?)\n```', block, re.S)
-    if len(blocks) != 2:
+    if len(blocks) != 2 or not blocks[0].startswith('【STYLE｜') or not blocks[1].startswith('【PERFORMANCE｜'):
         raise ValueError('成品块必须包含 STYLE 和 PERFORMANCE 两段')
+    if style_id == 36 and [len(b.splitlines()) for b in blocks] != [10, 4]:
+        raise ValueError('编号 36 必须保持 STYLE 九行和 PERFORMANCE 三行')
     return card, block, '\n\n'.join(blocks)
 
 
 def _range(values, unit):
-    if not values or any(not math.isfinite(v) or v <= 0 for v in values) or values[0] > values[1]:
-        raise ValueError('请提供项目已确认的正数区间 MIN MAX，且 MIN <= MAX')
-    if unit == 'mm' and any(v != int(v) for v in values):
+    if values is None or len(values) != 2:
+        raise ValueError('区间必须恰好提供 MIN MAX 两个值')
+    exact = []
+    for value in values:
+        # Bound conversion cost by the existing 42-character prompt line budget.
+        # This is a serialization limit, not a claim about physical camera limits.
+        token = str(value)
+        if len(token) > 64:
+            raise ValueError('数值文本过长，无法满足成品块行宽限制')
+        try:
+            number = Decimal(token)
+        except InvalidOperation as exc:
+            raise ValueError('区间只接受有限正数') from exc
+        if not number.is_finite() or number <= 0:
+            raise ValueError('区间只接受有限正数')
+        if abs(number.adjusted()) > 42 or len(number.as_tuple().digits) > 42:
+            raise ValueError('极端数值无法满足成品块行宽限制')
+        exact.append(number)
+    if exact[0] > exact[1]:
+        raise ValueError('区间必须满足 MIN <= MAX')
+    if unit == 'mm' and any(v != v.to_integral_value() for v in exact):
         raise ValueError('现有 C23 焦距区间只支持整数 mm，请使用项目确认的整数区间')
-    return '[' + ', '.join(('1:' + (str(int(v)) if v == int(v) else format(Decimal(str(v)), 'f'))) if unit == 'ratio' else f'{int(v)}mm'
-                            for v in values) + ']'
+    def plain(number):
+        value = format(number, 'f')
+        return value.rstrip('0').rstrip('.') if '.' in value else value
+    return '[' + ', '.join('1:' + plain(v) if unit == 'ratio' else plain(v) + 'mm'
+                            for v in exact) + ']'
 
 
 def render_selection(style_id, output='card', light=None, lens=None):
+    if output not in ('card', 'prompt'):
+        raise ValueError('输出格式仅支持 card 或 prompt')
     card, block, prompt = load_card(style_id)
     if output == 'card':
         if light is not None or lens is not None:
@@ -56,6 +80,9 @@ def render_selection(style_id, output='card', light=None, lens=None):
         prompt = prompt.replace('{{LENS_RANGE}}', _range(lens, 'mm'))
     elif light is not None or lens is not None:
         raise ValueError('区间覆盖仅适用于编号 36；其他卡保持既有正文')
+    if style_id == 36:
+        if '{{' in prompt or any(len(line) > 42 for line in prompt.splitlines()):
+            raise ValueError('数值区间超出成品块 42 字行宽，无法输出；请核对项目参数')
     return prompt
 
 
@@ -68,8 +95,8 @@ def run_selection_cli(styles, render_recommendation):
     group.add_argument('--select', type=int, help='明确选择已有风格编号；不会自动确认项目锁')
     group.add_argument('--genre', help='题材推荐，保留原排序及排除规则')
     parser.add_argument('--format', choices=('card', 'prompt'), default='card')
-    parser.add_argument('--light-range', nargs=2, type=float, metavar=('MIN', 'MAX'), help='已确认光比 1:MIN 至 1:MAX')
-    parser.add_argument('--lens-range', nargs=2, type=float, metavar=('MIN', 'MAX'), help='已确认焦距区间，单位 mm')
+    parser.add_argument('--light-range', nargs=2, type=str, metavar=('MIN', 'MAX'), help='已确认光比 1:MIN 至 1:MAX')
+    parser.add_argument('--lens-range', nargs=2, type=str, metavar=('MIN', 'MAX'), help='已确认焦距区间，单位 mm')
     args = parser.parse_args()
     if args.genre is not None:
         if args.format != 'card' or args.light_range is not None or args.lens_range is not None:
