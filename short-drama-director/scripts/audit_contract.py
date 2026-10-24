@@ -30,23 +30,41 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
 SUITE_DIR = os.path.dirname(BASE_DIR)
 
-# 10 张满配主力导演卡正主短语与关键指纹（与 style-bible/director-param-library.md & style-prefix-blocks.md 同源）
-CANONICAL_DIRECTOR_CARDS = {
-    "01": {"name": "张艺谋", "keywords": ("浓烈色块", "高饱和", "仪式对称", "大远景", "1:8", "冷暖对冲")},
-    "03": {"name": "王家卫", "keywords": ("霓虹", "抽帧", "前景遮挡", "浅景深", "1:6", "暗绿", "暖黄")},
-    "04": {"name": "徐克", "keywords": ("广角", "斜角", "高速", "急推", "1:8", "冷青", "16mm", "18mm")},
-    "06": {"name": "乌尔善", "keywords": ("神话", "重工业", "金青", "火光", "1:8", "图腾", "厚重")},
-    "07": {"name": "路阳", "keywords": ("冷青", "暖橙", "烛火", "火折", "浅景深", "1:8", "1:10", "硬切", "冷峻")},
-    "12": {"name": "袁和平", "keywords": ("硬桥硬马", "中景", "全景", "拳脚", "力道", "竹林", "青灰")},
-    "33": {"name": "朴赞郁", "keywords": ("幽绿", "暗红", "对称", "俯拍", "折磨", "冷冽", "1:8", "1:10", "高反差")},
-    "39": {"name": "大卫·芬奇", "keywords": ("冷黄绿", "青灰", "阴郁", "机械", "定焦", "1:6", "1:8", "精准")},
-    "52": {"name": "罗杰·狄金斯", "keywords": ("单源", "实用光", "剪影", "冷青灰", "阴影侧", "1:6", "1:8", "35~85mm")},
-    "64": {"name": "MAPPA", "keywords": ("高对比", "粗黑边", "速度线", "冲击帧", "广角透视", "粒子")},
-    "65": {"name": "国漫3D仙侠", "keywords": ("国漫3D", "半写实", "PBR", "丝绸", "丁达尔", "流光剑气")},
-    "66": {"name": "暗黑神话游戏CG", "keywords": ("虚幻5", "游戏CG", "PBR", "甲胄", "暗黑", "丁达尔")},
-    "71": {"name": "国漫3D进阶水墨", "keywords": ("三渲二", "水墨", "枯笔", "飞白", "墨韵", "朱砂")},
-    "72": {"name": "东方神话3D奇幻", "keywords": ("东方神话", "3D", "次表面散射", "青绿", "赤金", "法相")},
-}
+from style_card_loader import load_card, CARD_ALIASES, STYLE_DIR
+
+
+def resolve_director(value):
+    """Resolve exact IDs/names from the same parameter library as the selectors."""
+    if value is None or not str(value).strip():
+        raise ValueError("缺少明确导演卡；不得自动选卡")
+    value = str(value).strip()
+    if value.isdecimal():
+        sid = int(value)
+    else:
+        catalog = (STYLE_DIR / "director-style-catalog-74.md").read_text(encoding="utf-8")
+        matches = {int(sid) for sid, name in re.findall(r"^\| (\d+) \| \*\*([^*]+)\*\*", catalog, re.M)
+                   if value == name or (value == "押井守动画向" and sid == "68")}
+        canonical = {CARD_ALIASES.get(sid, sid) for sid in matches}
+        if len(canonical) != 1:
+            raise ValueError("未知或歧义导演名称；请提供明确编号")
+        sid = next(iter(canonical))
+    card, block, prompt = load_card(sid)  # Unknown/incomplete cards fail closed.
+    return sid, card, prompt
+
+
+def check_style(text, value):
+    try:
+        sid, card, prompt = resolve_director(value)
+        # Match complete source blocks; inherited ranges must be concrete, never placeholders.
+        pattern = re.escape(prompt)
+        pattern = pattern.replace(re.escape("{{LIGHT_RANGE}}"), r"\[1:[0-9.]+, 1:[0-9.]+\]")
+        pattern = pattern.replace(re.escape("{{LENS_RANGE}}"), r"\[[0-9]+mm, [0-9]+mm\]")
+        if not re.search(pattern, text):
+            raise ValueError("缺少所选卡完整 STYLE/PERFORMANCE 原文（项目区间须填实）")
+        return None
+    except (ValueError, OSError) as exc:
+        return f"CT3-STY {exc}"
+
 
 CONTRACT_ITEMS_FULL = [
     ("CT1-P0A", "P0A 前置六道锁基准表", "short-drama-director/SKILL.md §〇",
@@ -85,7 +103,7 @@ def print_init_checklist(mode="full", director=None):
     print("")
     print("> **铁律**：`validate_prompt.py` 报 `PASSED` 只代表「P4 投喂块语法合格」，**绝不代表全流程交付完成**！")
     print("> 开工前必须先建本表；每写完一节必须回对照「权威源文件路径」与「必现结构指纹」打 `[x]`；")
-    print("> 交付前必须跑 `python3 short-drama-director/scripts/audit_contract.py <稿件.md>` 全绿放行。")
+    print("> 交付前执行结构与逻辑检查；机检通过不替代人工语义评审或实际生成验收。")
     print("")
     print("| 状态 | 契约码 | 阶段交付物 | 唯一权威源文件（必须回读，禁凭印象手搓） | 必现结构指纹（机检核销项） |")
     print("| :--- | :--- | :--- | :--- | :--- |")
@@ -95,20 +113,10 @@ def print_init_checklist(mode="full", director=None):
         print(f"| `[ ]` | `{code}` | **{title}** | `{ref_path}` | {fp} |")
     if director:
         print("\n## 🎨 指定导演卡正主参数提取指引（严禁凭常识手搓）")
-        d_key = str(director).strip().zfill(2) if str(director).strip().isdigit() else str(director).strip()
-        matched = None
-        for k, v in CANONICAL_DIRECTOR_CARDS.items():
-            if d_key == k or d_key in v["name"] or v["name"] in d_key:
-                matched = (k, v)
-                break
-        if matched:
-            k, v = matched
-            print(f"- **锁定卡号**：`{k} {v['name']}`")
-            print(f"- **权威源位置**：`short-drama-director/references/style-bible/director-param-library.md` + `style-prefix-blocks.md`")
-            print(f"- **必现正主指纹词**：`{' / '.join(v['keywords'])}`")
-            print(f"- **自动提取命令**：`python3 short-drama-director/scripts/style-lock-ladder.py --card {k}`")
-        else:
-            print(f"- 请运行 `python3 short-drama-director/scripts/style-lock-recommend.py` 或查阅 `director-style-catalog-74.md` 提取 `{director}` 的正主槽位。")
+        sid, card, _ = resolve_director(director)
+        print(f"- **锁定卡号**：{sid}；{card.splitlines()[0]}")
+        print(f"- **自动提取命令**：`python3 short-drama-director/scripts/style-lock-ladder.py --select {sid}`")
+        print("- 完整卡以 loader 读取的参数库和成品块为准；项目区间须确认。")
 
 
 def audit_markdown(text, mode="auto", director=None):
@@ -201,28 +209,14 @@ def audit_markdown(text, mode="auto", director=None):
 
     # 3. CT3: Style-Bible canonical verification
     detected_card = director
-    if not detected_card:
-        m_card = re.search(r"(?:导演卡|风格卡|I\s*锁)[^\n]{0,30}?\b(0[13467]|12|33|39|52|64)\b", text)
-        if m_card:
-            detected_card = m_card.group(1)
-        else:
-            for k, v in CANONICAL_DIRECTOR_CARDS.items():
-                if v["name"] in text:
-                    detected_card = k
-                    break
-    if detected_card:
-        d_key = str(detected_card).strip().zfill(2) if str(detected_card).strip().isdigit() else str(detected_card).strip()
-        for k, v in CANONICAL_DIRECTOR_CARDS.items():
-            if d_key == k or d_key in v["name"] or v["name"] in d_key:
-                hits = [kw for kw in v["keywords"] if kw in text]
-                if len(hits) >= 2:
-                    passed.append(f"CT3-STY I 锁画风已对齐 style-bible [{k} {v['name']}] 正主槽位词 {hits[:4]}")
-                else:
-                    issues.append(
-                        f"CT3-STY I 锁画风疑似手搓近似词：检测到导演卡 [{k} {v['name']}]，但正文未命中 style-bible 正主槽位指纹词 "
-                        f"{v['keywords']}（仅命中 {hits}）——严禁凭常识手搓风格词，必须从 `director-param-library.md` / `style-prefix-blocks.md` 取正主！"
-                    )
-                break
+    if detected_card is None:
+        m = re.search(r"(?:导演卡|风格卡|I\s*锁)[^\n]{0,30}?\b(\d+)\b", text)
+        detected_card = m.group(1) if m else None
+    style_error = check_style(text, detected_card)
+    if style_error:
+        issues.append(style_error)
+    else:
+        passed.append("CT3-STY 所选卡完整文本匹配；不证明视觉效果")
 
     # 4. CT4: P3 Blocking, Storyboard Sheet CLEAN_GRID & Graphical Delivery Checklist
     if mode == "full":
@@ -287,7 +281,7 @@ def _self_test():
         "素材接线单 只控制什么 不控制什么 连续性台账 SET_STATE\n"
     )
     iss, _, pas = audit_markdown(compliant_sample, mode="full")
-    assert not iss and len(pas) >= 8, f"compliant sample should pass, got {iss}"
+    assert any("CT3-STY" in item for item in iss), "keyword-only sample must not pass"
 
     # 3. Verify sketchy / incomplete sample is caught on CT1, CT2, CT3, CT4, CT6
     sketchy_sample = (
@@ -318,7 +312,10 @@ def main():
         sys.exit(_self_test())
 
     if args.init or not args.file:
-        print_init_checklist(mode="full" if args.mode == "auto" else args.mode, director=args.director)
+        try:
+            print_init_checklist(mode="full" if args.mode == "auto" else args.mode, director=args.director)
+        except (ValueError, OSError) as exc:
+            ap.error(str(exc))
         sys.exit(0)
 
     if not os.path.isfile(args.file):
@@ -339,7 +336,7 @@ def main():
     if issues:
         print(f"\n[-] 交付契约未通过：共 {len(issues)} 项契约/权威源缺失！严禁把 validate_prompt 格式全绿当成任务完成！")
         sys.exit(1)
-    print(f"\n[+] 交付契约全项核销通过（共 {len(passed)} 项硬产出与权威模板指纹全部在位）")
+    print(f"\n[+] 结构检查通过（{len(passed)} 项）；逻辑、人工语义与生成验收须分别核验")
     sys.exit(0)
 
 
