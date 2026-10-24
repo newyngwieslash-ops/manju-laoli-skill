@@ -3,6 +3,9 @@ import argparse
 import json
 import math
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "sd-feed-engine/scripts"))
+from script_feed_diff import structured
 
 ROOT_FIELDS = {
     "schema_version", "artifact_type", "project_id", "stage_id",
@@ -250,6 +253,10 @@ def validate(data):
             errors.append(
                 f"{dialogue_label} has no matching dialogue continuation in {target_id}"
             )
+    try:
+        structured(data)
+    except ValueError as exc:
+        errors.append(f"dialogue conservation structure: {exc}")
     return errors
 
 

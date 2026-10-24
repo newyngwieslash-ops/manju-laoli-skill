@@ -98,6 +98,7 @@ def default_project_state():
         "schema_version": "7.4.20",
         "project_name": "示例短剧项目",
         "locks": {
+            "confirmed": False,  # Template is not user approval.
             "track": "1",
             "source": "1",
             "model": "2.5",
@@ -158,6 +159,7 @@ def default_project_state():
                 "address_map": {"林风": "小疯子"},
                 "char_states": {
                     "seg_1_detached": {
+                        "segments": ["段1"],
                         "item": "金丝半框眼镜",
                         "action": "摘下金丝半框眼镜捏在指间",
                         "consequence": "鼻梁两侧留有浅红压痕",
@@ -185,6 +187,11 @@ def default_project_state():
         "segments": [
             {
                 "seg_id": "段1",
+                "cast": ["林风", "陈枭"],
+                "props": ["旧怀表"],
+                "entry_state": {"林风": {"position": "走廊"}, "陈枭": {"position": "铁门前", "glasses": "佩戴"}, "旧怀表": {"holder": "林风", "hand": "左手"}, "地下拳馆走廊": {"lighting": "冷白顶灯"}},
+                "exit_state": {"林风": {"position": "走廊"}, "陈枭": {"position": "铁门前", "glasses": "摘下持于指间"}, "旧怀表": {"holder": "林风", "hand": "左手"}, "地下拳馆走廊": {"lighting": "冷白顶灯"}},
+                "state_changes": [{"entity": "陈枭", "phase": "within", "before": {"position": "铁门前", "glasses": "佩戴"}, "after": {"position": "铁门前", "glasses": "摘下持于指间"}, "reason": "首镜摘下眼镜", "shot_no": 1}],
                 "scene": "地下拳馆走廊",
                 "segment_type": "战斗动作段",
                 "emotion_anchor_id": "E04",

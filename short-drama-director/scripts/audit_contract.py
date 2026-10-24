@@ -119,7 +119,7 @@ def print_init_checklist(mode="full", director=None):
         print("- 完整卡以 loader 读取的参数库和成品块为准；项目区间须确认。")
 
 
-def audit_markdown(text, mode="auto", director=None):
+def audit_markdown(text, mode="auto", director=None, state=None):
     issues = []
     warns = []
     passed = []
@@ -253,6 +253,15 @@ def audit_markdown(text, mode="auto", director=None):
         else:
             issues.append("CT6-LED 缺失 P5《跨镜连续性台账（Continuity Ledger）》（须逐段登记 SET_STATE / CHAR_STATE / 道具落点 / 出口帧，权威见 continuity-ledger.md）")
 
+    if state is None:
+        issues.append("CT7 缺少项目结构化台账；关键词只能证明结构，不能放行交付")
+    else:
+        from project_contract import validate_stage_records
+        try:
+            issues.extend(validate_stage_records(state))
+        except (ValueError, TypeError, OSError) as exc:
+            issues.append(f"CT7 台账校验失败：{exc}")
+    warns.append("人工语义评审：未执行；实际生成/视觉验收：未执行")
     return issues, warns, passed
 
 
@@ -305,6 +314,7 @@ def main():
     ap.add_argument("--init", action="store_true", help="开工前输出《全流程交付契约核销表》")
     ap.add_argument("--mode", default="auto", choices=["auto", "full", "board-lite"], help="交付模式")
     ap.add_argument("--director", default=None, help="锁定的导演卡编号或姓名（如 07 / 路阳 / 33 / 朴赞郁）")
+    ap.add_argument("--state", help="现有 project_state.json，含逐阶段实体记录与连续性快照")
     ap.add_argument("--self-test", action="store_true", help="运行内置自测")
     args = ap.parse_args()
 
@@ -325,7 +335,13 @@ def main():
     with open(args.file, "r", encoding="utf-8") as f:
         txt = f.read()
 
-    issues, warns, passed = audit_markdown(txt, mode=args.mode, director=args.director)
+    import json
+    try:
+        with open(args.state, encoding="utf-8") as handle:
+            state = json.load(handle)
+    except (TypeError, ValueError, OSError) as exc:
+        ap.error(f"必须提供有效 --state：{exc}")
+    issues, warns, passed = audit_markdown(txt, mode=args.mode, director=args.director, state=state)
     print(f"=== 📋 全流程交付契约核销报告 ({os.path.basename(args.file)} | mode={args.mode}) ===")
     for p in passed:
         print(f"  [PASS] {p}")
