@@ -210,3 +210,14 @@ python short-drama-director/scripts/style-lock-recommend.py --select 68 --format
 ```
 
 以上从仓库根目录运行；数字仅为调用演示，不是默认值或导演参数。实际投喂须改为项目确认值，缺值拒绝输出。#28 与 #68 的 prompt 相同。模板不强制冷调、长焦、静止或混合工艺；遵从已有资产、声音、时长、镜数与运动。STYLE/PERFORMANCE 是完整投喂稿的组成部分，仍须模型适配与全部前置锁。来源、作品差异、许可边界与字段推导见 [研究说明](../docs/research/oshii/README.md)。未进行模型或视频验证。
+
+## 离线工程试用与迁移
+
+本项目是 13 个同级目录组成的 Agent 技能套装。请在独立副本试用，保持总控及 12 个子技能同级；CLI 不要求运行模型。可重复离线检查（Windows/Linux 均使用 Python 3.12、UTF-8）：
+
+```bash
+python -X utf8 short-drama-director/scripts/run_checks.py
+python -X utf8 short-drama-director/scripts/compile_feed.py --state short-drama-director/tests/fixtures/offline/two_person-state.json
+```
+
+第二条是明确标注的合成小样，仅打印文本，不构成用户项目批准。实际项目须先确认锁、逐段实体与状态，模板默认未确认。编译完成不等于完整交付或视觉验收。旧输入、台词双阶段守恒、状态/素材层级及模型证据的迁移说明见 [工程验收与迁移](../docs/engineering/pipeline-hardening.md)。模型数值当前为项目策略，官方能力待核；H3 与单镜多条对白不会错误套用现有编译格式。

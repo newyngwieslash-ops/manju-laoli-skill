@@ -440,3 +440,7 @@ lixiaoxiao9888-create/manju-laoli-skill/        # V7.4.20 multi-skill suite (154
 </tr>
 </table>
 
+
+## 离线契约检查
+
+使用 Python 3.12 从仓库根目录运行 `python -X utf8 short-drama-director/scripts/run_checks.py`，执行完整文本/工程检查与三类固定小样；不调用生成模型。13 个技能目录须同级保留。新增显式项目锁、逐段实体/状态、台词 ID 守恒和阶段产物引用验证，旧项目迁移及尚未验证的范围见 [工程验收与迁移](docs/engineering/pipeline-hardening.md)。模型上限配置目前是项目策略，官方证据待核；机检通过不代表人工语义或视频验收完成。
