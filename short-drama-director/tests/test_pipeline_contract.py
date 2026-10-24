@@ -65,7 +65,7 @@ class PipelineTests(unittest.TestCase):
             def add(stage,entity,payload=None,text=None):
                 path=root/f'{stage}-{entity}.json'
                 if text is None:text=json.dumps({'stage_id':stage,'entity_id':entity,'payload':payload},ensure_ascii=False)
-                path.write_text(text,encoding='utf-8')
+                path.write_bytes(text.replace('\r\n','\n').replace('\n','\r\n').encode('utf-8'))
                 records[stage].append({'entity_id':entity,'artifact_ref':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'summary':'Synthetic offline structural fixture'})
             add('P0','PROJECT',{'locks':state['locks']})
             for table in ('characters','scenes','props'):

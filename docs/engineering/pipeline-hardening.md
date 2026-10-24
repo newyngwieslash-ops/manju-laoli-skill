@@ -77,3 +77,8 @@ python -X utf8 short-drama-director/scripts/run_checks.py
 CI 定义：`.github/workflows/offline-contracts.yml`，Ubuntu/Windows、Python 3.12、只读 contents 权限，无密钥、无付费调用；未完成的远端运行不能称通过。本地仅实际执行 Linux/Python；复制安装 smoke 不等于各 Agent 宿主安装认证。
 
 尚未运行：模型生成、视频/图像视觉验收、完整宿主交互。H3 自动编译及单镜多条对白暂不支持，明确拒绝并交给既有适配流程。官方模型能力仍待核，人工语义与实际生成验收不能由本次文本机检替代。
+
+
+### 首轮远端跨平台反馈
+
+首轮 PR CI（run 40096439422）Ubuntu 通过，Windows 发现三个真实兼容问题：临时目录短路径与解析后长路径不一致；测试对已有 CRLF 再转换造成 CRCRLF；符号链接入口未从真实脚本位置加载模块。修复采用两侧路径规范化、规范 CRLF 测试输入、解析真实入口目录，并保留原内容 hash 校验；P4 文本比较仅统一换行。包检查路径同样规范为斜杠，防 Windows 静默跳过路径域。没有删除测试或放宽实体/台词门禁，后续 CI 以对应新提交运行结果为准。

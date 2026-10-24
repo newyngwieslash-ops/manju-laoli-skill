@@ -173,7 +173,7 @@ def read(path):
 
 
 def rel(p):
-    return os.path.relpath(p, PKG)
+    return os.path.relpath(p, PKG).replace(os.sep, "/")
 
 
 def scan_md_files():

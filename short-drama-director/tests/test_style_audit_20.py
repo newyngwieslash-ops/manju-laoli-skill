@@ -113,7 +113,7 @@ class StyleAudit20(unittest.TestCase):
     def test_R10_bom_crlf_compatibility(self):
         expected=loader.render_selection(36,'prompt',[2,6],[35,50])
         with style_copy() as d:
-            for p in d.iterdir(): p.write_bytes(b'\xef\xbb\xbf'+p.read_bytes().replace(b'\n',b'\r\n'))
+            for p in d.iterdir(): p.write_bytes(b'\xef\xbb\xbf'+p.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))
             self.assertEqual(loader.render_selection(36,'prompt',[2,6],[35,50]),expected)
 
     def test_R11_unicode_space_paths(self):

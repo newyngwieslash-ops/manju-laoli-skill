@@ -189,6 +189,9 @@ def render(genre_text, top=4):
 
 
 if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     from style_card_loader import run_selection_cli
     if run_selection_cli(STYLES, render):
         raise SystemExit(0)

@@ -172,8 +172,8 @@ def read_receipt(receipt):
         if not path.is_file() and '/' not in ref:
             matches=list(SUITE.glob('*/references/**/'+ref))
             if len(matches)==1:path=matches[0].resolve()
-        if not path.is_relative_to(SUITE) or not path.is_file():raise ValueError(f'未找到唯一仓库引用：{ref}')
-        result.append(f'{path.relative_to(SUITE).as_posix()} sha256={hashlib.sha256(path.read_bytes()).hexdigest()}')
+        if not path.is_relative_to(SUITE.resolve()) or not path.is_file():raise ValueError(f'未找到唯一仓库引用：{ref}')
+        result.append(f'{path.relative_to(SUITE.resolve()).as_posix()} sha256={hashlib.sha256(path.read_bytes()).hexdigest()}')
     return result
 
 # Malformed nested JSON must fail closed without a traceback in the public CLI.
@@ -204,7 +204,7 @@ def validate_stage_records(state):
             if not isinstance(row,dict) or any(not isinstance(row.get(k),str) or not row[k].strip() for k in ('entity_id','artifact_ref','sha256','summary')):
                 errors.append(f'CT7 {stage} 记录缺实体、文件、摘要或内容指纹');continue
             path=(SUITE/row['artifact_ref']).resolve()
-            if not path.is_relative_to(SUITE) or not path.is_file():errors.append(f'CT7 {stage} 引用不存在或越出仓库');continue
+            if not path.is_relative_to(SUITE.resolve()) or not path.is_file():errors.append(f'CT7 {stage} 引用不存在或越出仓库');continue
             content=path.read_bytes()
             if not content.strip() or hashlib.sha256(content).hexdigest()!=row['sha256']:
                 errors.append(f'CT7 {stage} 文件为空或内容指纹不匹配');continue
@@ -213,7 +213,7 @@ def validate_stage_records(state):
             try:
                 if stage=='P4':
                     from compile_feed import compile_project_to_feed
-                    if content.decode('utf-8').strip()!=compile_project_to_feed(state).strip():raise ValueError('P4 不是当前台账的实际编译产物')
+                    if content.decode('utf-8').replace('\r\n','\n').strip()!=compile_project_to_feed(state).strip():raise ValueError('P4 不是当前台账的实际编译产物')
                     continue
                 artifact=json.loads(content)
                 if artifact.get('stage_id')!=stage or artifact.get('entity_id')!=entity:raise ValueError('阶段/实体归属不符')
