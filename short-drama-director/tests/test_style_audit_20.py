@@ -38,7 +38,7 @@ def read_module(name):
 class StyleAudit20(unittest.TestCase):
     def cli(self, entry, *args, root=None, env=None):
         return subprocess.run([sys.executable, str((root or ROOT) / 'scripts' / (entry+'.py')), *args],
-                              text=True, capture_output=True, cwd='/tmp', timeout=15, env=env)
+                              text=True, capture_output=True, cwd=tempfile.gettempdir(), timeout=15, env=env, encoding='utf-8')
 
     def assert_error(self, result):
         self.assertEqual(result.returncode, 2, result.stdout)
@@ -48,7 +48,7 @@ class StyleAudit20(unittest.TestCase):
     def test_R01_empty_documents(self):
         for name in ('director-param-library.md', 'style-prefix-blocks.md'):
             with style_copy() as d:
-                (d/name).write_text('')
+                (d/name).write_text('', encoding='utf-8')
                 with self.assertRaises(ValueError):
                     loader.load_card(36)
 
@@ -66,7 +66,7 @@ class StyleAudit20(unittest.TestCase):
         for replacement in ['[1:2, 1:6]', '{{LENS_RANGE}}']:
             with style_copy() as d:
                 p=d/'style-prefix-blocks.md'
-                p.write_text(p.read_text().replace('{{LIGHT_RANGE}}',replacement))
+                p.write_text(p.read_text(encoding='utf-8').replace('{{LIGHT_RANGE}}',replacement), encoding='utf-8')
                 with self.assertRaises(ValueError):
                     loader.render_selection(36,'prompt',[2,6],[35,50])
 
@@ -74,27 +74,27 @@ class StyleAudit20(unittest.TestCase):
         for name in ('director-param-library.md', 'style-prefix-blocks.md'):
             with style_copy() as d:
                 p=d/name
-                text=p.read_text(); target=next(s for s in re.split(r'(?m)(?=^## )',text) if '编号 36' in s.splitlines()[0])
-                p.write_text(text+'\n'+target)
+                text=p.read_text(encoding='utf-8'); target=next(s for s in re.split(r'(?m)(?=^## )',text) if '编号 36' in s.splitlines()[0])
+                p.write_text(text+'\n'+target, encoding='utf-8')
                 with self.assertRaises(ValueError): loader.load_card(36)
 
     def test_R06_slot_deletion_and_duplication(self):
         for duplicate in (False,True):
             with style_copy() as d:
-                p=d/'director-param-library.md';text=p.read_text();pos=text.index('<!-- style-card:36:start -->')
+                p=d/'director-param-library.md';text=p.read_text(encoding='utf-8');pos=text.index('<!-- style-card:36:start -->')
                 tail=text[pos:];row=next(l for l in tail.splitlines() if l.startswith('| 5 |'))
-                p.write_text(text[:pos]+tail.replace(row,row+'\n'+row if duplicate else ''))
+                p.write_text(text[:pos]+tail.replace(row,row+'\n'+row if duplicate else ''), encoding='utf-8')
                 with self.assertRaises(ValueError): loader.load_card(36)
 
     def test_R07_fenced_block_count_and_order(self):
         for mutation in ('extra','reverse'):
             with style_copy() as d:
-                p=d/'style-prefix-blocks.md';text=p.read_text();pos=text.index('<!-- style-block:36:start -->');end=text.index('<!-- style-block:36:end -->',pos);tail=text[pos:end]
+                p=d/'style-prefix-blocks.md';text=p.read_text(encoding='utf-8');pos=text.index('<!-- style-block:36:start -->');end=text.index('<!-- style-block:36:end -->',pos);tail=text[pos:end]
                 if mutation=='extra': tail+='\n```text\nextra\n```\n'
                 else:
                     blocks=re.findall(r'```text\n.*?\n```',tail,re.S)
                     tail=tail.replace(blocks[0],'PLACEHOLDER').replace(blocks[1],blocks[0]).replace('PLACEHOLDER',blocks[1])
-                p.write_text(text[:pos]+tail+text[end:])
+                p.write_text(text[:pos]+tail+text[end:], encoding='utf-8')
                 with self.assertRaises(ValueError): loader.load_card(36)
 
     def copied_cli(self, mutate):
@@ -129,7 +129,10 @@ class StyleAudit20(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);(root/'scripts').mkdir()
             for entry in ENTRIES:
-                (root/'scripts'/(entry+'.py')).symlink_to(ROOT/'scripts'/(entry+'.py'))
+                try:
+                    (root/'scripts'/(entry+'.py')).symlink_to(ROOT/'scripts'/(entry+'.py'))
+                except (OSError, NotImplementedError) as exc:
+                    self.skipTest(f'symlink capability unavailable: {exc}')
                 result=self.cli(entry,'--select','36',root=root)
                 self.assertEqual(result.returncode,0,result.stderr)
                 self.assertIn('| 11 |',result.stdout)
@@ -192,7 +195,7 @@ class StyleAudit20(unittest.TestCase):
         self.assertNotRegex(expected,r'P01|IMAX|CN-|12 秒|诺兰|Keighley')
         with style_copy() as d:
             # Metadata outside code fences is never part of the delivery payload.
-            p=d/'director-param-library.md';p.write_text(p.read_text()+'\nP01 OPTIONAL; CN-IMAX-F01 pending\n')
+            p=d/'director-param-library.md';p.write_text(p.read_text(encoding='utf-8')+'\nP01 OPTIONAL; CN-IMAX-F01 pending\n', encoding='utf-8')
             self.assertEqual(loader.render_selection(36,'prompt',[2,6],[35,50]),expected)
 
     def test_R20_c23_boundaries(self):

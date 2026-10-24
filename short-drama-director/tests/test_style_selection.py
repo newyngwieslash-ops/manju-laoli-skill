@@ -1,3 +1,4 @@
+import tempfile
 """CLI and content regressions; numeric fixtures are test inputs, not defaults."""
 import contextlib
 import importlib.util
@@ -23,7 +24,7 @@ def module(name):
 class SelectionTests(unittest.TestCase):
     def cli(self, entry, *args):
         return subprocess.run([sys.executable, str(ROOT / 'scripts' / (entry + '.py')), *args],
-                              text=True, capture_output=True, cwd='/tmp')
+                              text=True, capture_output=True, cwd=tempfile.gettempdir(), encoding='utf-8')
 
     def test_both_entrypoints_full_card_and_prompt(self):
         for entry in ('style-lock-ladder', 'style-lock-recommend'):
@@ -81,11 +82,11 @@ class SelectionTests(unittest.TestCase):
             card, block, prompt = load_card(style_id)
             self.assertIn('【STYLE', prompt)
             self.assertIn('【PERFORMANCE', prompt)
-        text = (ROOT / 'references/style-bible/director-param-library.md').read_text()
+        text = (ROOT / 'references/style-bible/director-param-library.md').read_text(encoding='utf-8')
         rows = re.findall(r'^\|\s*\*\*(\d+) [^|]+\|\s*T\d\s', text, re.M)
         self.assertEqual(set(map(int, rows)), set(ids))
         self.assertEqual(len(rows), 16)
-        catalog = (ROOT / 'references/style-bible/director-style-catalog-74.md').read_text()
+        catalog = (ROOT / 'references/style-bible/director-style-catalog-74.md').read_text(encoding='utf-8')
         self.assertEqual(len(re.findall(r'^\| \d+ \| \*\*', catalog, re.M)), 74)
 
     def test_c23_validation_and_range_guard(self):

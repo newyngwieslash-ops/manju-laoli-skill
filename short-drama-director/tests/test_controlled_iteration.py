@@ -18,12 +18,12 @@ ENTRIES = ('style-lock-ladder', 'style-lock-recommend')
 class ControlledIterationTests(unittest.TestCase):
     def cli(self, entry, *args):
         return subprocess.run([sys.executable, str(ROOT / 'scripts' / (entry + '.py')), *args],
-                              capture_output=True, text=True, timeout=10, cwd='/tmp')
+                              capture_output=True, text=True, timeout=10, cwd=tempfile.gettempdir(), encoding='utf-8')
 
     def test_frozen_old_cards_and_recommendations(self):
-        fixture = json.loads((ROOT / 'tests/fixtures/style_before.json').read_text())
+        fixture = json.loads((ROOT / 'tests/fixtures/style_before.json').read_text(encoding='utf-8'))
         digest = lambda s: hashlib.sha256(s.encode()).hexdigest()
-        registries = json.loads((ROOT / 'tests/fixtures/style_registries_before.json').read_text())['registries']
+        registries = json.loads((ROOT / 'tests/fixtures/style_registries_before.json').read_text(encoding='utf-8'))['registries']
         for sid, expected in fixture['old_prompts'].items():
             self.assertEqual(digest(loader.load_card(int(sid))[2]), expected, sid)
             for entry in ENTRIES:
@@ -85,11 +85,11 @@ class ControlledIterationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             dest = Path(d)
             for name in ('director-param-library.md', 'style-prefix-blocks.md'):
-                (dest / name).write_text((loader.STYLE_DIR / name).read_text())
+                (dest / name).write_text((loader.STYLE_DIR / name).read_text(encoding='utf-8'), encoding='utf-8')
             path = dest / 'style-prefix-blocks.md'
             # Change only the Nolan PERFORMANCE heading, leaving two fenced blocks.
-            text = path.read_text(); pos = text.index('<!-- style-block:36:start -->')
-            path.write_text(text[:pos] + text[pos:].replace('【PERFORMANCE｜', '【STYLE｜'))
+            text = path.read_text(encoding='utf-8'); pos = text.index('<!-- style-block:36:start -->')
+            path.write_text(text[:pos] + text[pos:].replace('【PERFORMANCE｜', '【STYLE｜'), encoding='utf-8')
             with patch.object(loader, 'STYLE_DIR', dest), self.assertRaises(ValueError):
                 loader.load_card(36)
 

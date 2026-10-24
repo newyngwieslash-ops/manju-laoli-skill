@@ -1,3 +1,4 @@
+import tempfile
 """Oshii core/alias regressions. Numbers are fixtures, never creative defaults."""
 import hashlib
 from pathlib import Path
@@ -17,7 +18,7 @@ ENTRIES = ('style-lock-ladder', 'style-lock-recommend')
 class OshiiTests(unittest.TestCase):
     def cli(self, entry, *args):
         return subprocess.run([sys.executable, str(ROOT/'scripts'/(entry+'.py')), *args],
-                              text=True, capture_output=True, cwd='/tmp', timeout=15)
+                              text=True, capture_output=True, cwd=tempfile.gettempdir(), timeout=15, encoding='utf-8')
 
     def test_both_ids_both_entries_card_and_prompt(self):
         expected = loader.render_selection(68, 'prompt', [2,6], [35,50])
@@ -71,13 +72,13 @@ class OshiiTests(unittest.TestCase):
             ('style-prefix-blocks.md','{{LENS_RANGE}}','[35mm, 50mm]'),
             ('style-prefix-blocks.md','形体骨相：沿用角色资产，动作受力与身体反馈对应\n','')]:
             with style_copy() as d:
-                p=d/filename;text=p.read_text();marker='<!-- style-card:68:start -->' if filename.startswith('director') else '<!-- style-block:68:start -->'
-                pos=text.index(marker);self.assertIn(old,text[pos:]);p.write_text(text[:pos]+text[pos:].replace(old,new,1))
+                p=d/filename;text=p.read_text(encoding='utf-8');marker='<!-- style-card:68:start -->' if filename.startswith('director') else '<!-- style-block:68:start -->'
+                pos=text.index(marker);self.assertIn(old,text[pos:]);p.write_text(text[:pos]+text[pos:].replace(old,new,1), encoding='utf-8')
                 for sid in (28,68):
                     with self.assertRaises(ValueError):loader.load_card(sid)
 
     def test_source_scope_and_existing_nolan_unchanged(self):
-        source=(ROOT.parent/'docs/research/oshii/README.md').read_text()
+        source=(ROOT.parent/'docs/research/oshii/README.md').read_text(encoding='utf-8')
         for token in ('S01','S02','S03','S04','S05','S06','S07','E01','E05','待项目审核','未确认开放','2018','1995','2008'):
             self.assertIn(token,source)
         # Fixed baseline digest includes both Nolan fenced blocks, with no project values.
