@@ -5,7 +5,7 @@ compile_feed.py · P4 投喂提示词自动装配编译器（AI 写戏 · 脚本
 设计动机：
   在 P4 阶段让大模型手工拼装七段式，极易漏写「Voice 声线锁」「年龄锚/三件套」「CHAR_STATE 偏离替换语」
   「末镜末 1 秒定格收束句」或「M1 素材接线单」。
-  本编译器读取 project_state.json，自动将结构化分镜编译为 100% 符合 C1~C30 与六道闸门的七段式投喂稿。
+  本编译器读取 project_state.json，自动将结构化分镜编译为 受项目契约约束的投喂文本；仍须独立质检，不保证全部门禁通过。
 用法：
   python3 scripts/compile_feed.py --state project_state.json [--out feed.md]
   python3 scripts/compile_feed.py --self-test
@@ -22,24 +22,31 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 import sd_core
+from project_contract import validate_state, read_receipt, clock
 
 
 def compile_project_to_feed(state):
-    locks = state.get("locks", {})
-    mode = locks.get("asset_mode", "M1").upper()
-    aspect = locks.get("aspect", "16:9")
+    errors = validate_state(state)
+    if errors:
+        raise ValueError("；".join(errors))
+    locks = state["locks"]
+    if locks["model"] == "h3":
+        raise ValueError("H3 须使用 h3-adapter 原生格式；本编译器尚不支持，拒绝错误路由七段式")
+    mode = locks["asset_mode"]
+    aspect = locks["aspect"]
     style_card = locks.get("style_card", "电影级写实质感")
     wa = state.get("world_anchor", {})
     era = wa.get("era_anchor", "现代")
-    receipt = state.get("receipt", {})
-    plugins = receipt.get("active_plugins", ["sd-storyboard-engine", "sd-feed-engine"])
-    read_refs = receipt.get("read_refs", ["model-adapters.md", "segment-splicing.md"])
-    fps = receipt.get("fingerprints", ["【默认镜头策略】"])
+    receipt = state.get("receipt") or {}
+    plugins = receipt.get("active_plugins", [])
+    read_refs = read_receipt(receipt)
+    fps = receipt.get("fingerprints", [])
 
     out_lines = [
         f"> 素材形态：{mode}",
         f"> 激活外挂：{' + '.join(plugins)}",
-        f"> 已读子库：{' / '.join(read_refs)}",
+        f"> 已读子库：{' / '.join(read_refs) if read_refs else '未提供读取记录'}（仅脚本读取，不等于语义评审）",
+        f"> 模型路由：{locks['model']}；用户声明确认，未执行生成",
         f"> 本段调用外挂指纹：{'｜'.join(fps)}",
         "",
     ]
@@ -69,7 +76,8 @@ def compile_project_to_feed(state):
 
         # 组装【核心人物】（自动注入年龄锚 + 三件套 + Voice 声线锁 + CHAR_STATE 脱离替换语）
         cast_parts = []
-        for cname, cinfo in chars.items():
+        for cname in seg["cast"]:
+            cinfo = chars[cname]
             cfig = cinfo.get("fig_no")
             age = cinfo.get("age_anchor", "")
             body = cinfo.get("body_anchor", "")
@@ -78,6 +86,8 @@ def compile_project_to_feed(state):
             # 检查本段是否有 CHAR_STATE 脱离声明
             dev_clauses = []
             for _k, st_v in (cinfo.get("char_states") or {}).items():
+                if sid not in st_v["segments"]:
+                    continue
                 item = st_v.get("item", "")
                 act = st_v.get("action", "")
                 cons = st_v.get("consequence", "")
@@ -97,7 +107,8 @@ def compile_project_to_feed(state):
                 )
 
         # 组装道具锚点（如有）
-        for pname, pinfo in props.items():
+        for pname in seg["props"]:
+            pinfo = props[pname]
             pfig = pinfo.get("fig_no")
             mdesc = pinfo.get("material_desc", "")
             if mode != "M0" and pfig:
@@ -111,9 +122,9 @@ def compile_project_to_feed(state):
         shot_lines = []
         for s_i, sh in enumerate(shots):
             no = sh.get("no", s_i + 1)
-            st_t = int(sh.get("start", 0))
-            ed_t = int(sh.get("end", st_t + 4))
-            t_str = f"{st_t // 60:02d}:{st_t % 60:02d}-{ed_t // 60:02d}:{ed_t % 60:02d}"
+            st_t = sh["start"]
+            ed_t = sh["end"]
+            t_str = f"{clock(st_t)}-{clock(ed_t)}"
             spec = sh.get("spec", "中景 · 平视 · 固定")
             act = sh.get("action", "").rstrip("。； ")
             # 遵循 C20m 铁律：镜行正文严禁默认塞入「85mm F1.4极浅景深阴影侧取景（焦平面全程死锁面部无漂移）/ 10-15厘米 / 极细微规律呼吸式微动」等摄影机说明书废话，100% 留给人物与道具纯物理动作
@@ -121,8 +132,8 @@ def compile_project_to_feed(state):
             if opt_lock and opt_lock not in act:
                 act += f"；{opt_lock}"
             # 末镜自动注入「前置 0.5 秒收束窗 + 末 1 秒整秒硬定格」标准句
-            if s_i == len(shots) - 1 and "定格" not in act and "空镜" not in act:
-                settle_t = max(st_t, ed_t - 1.5)
+            if locks["seam"] == "1" and s_i == len(shots) - 1 and "定格" not in act and "空镜" not in act:
+                settle_t = max(float(st_t), float(ed_t) - 1.5)
                 act += f"；第 {settle_t:g} 秒起运动收束，末 1 秒全体人物保持姿态与站位、动作完全静止、画面定格"
             snd = sh.get("sound", "环境音").rstrip("。 ")
             dlg = sh.get("dialogue", "无").rstrip("。 ")
@@ -135,7 +146,7 @@ def compile_project_to_feed(state):
         out_lines.extend([
             f"## 【投喂单元 {idx}/{total_segs} · {sid}】",
             "```text",
-            f"【画幅风格】{aspect} 横屏，{era}，{style_card}，{seg_type}（aspect_ratio={aspect}）",
+            f"【画幅风格】{aspect} {"竖屏" if aspect == "9:16" else "横屏"}，{era}，{style_card}，{seg_type}（aspect_ratio={aspect}）",
             f"【场景资产】{scn_tag}",
             f"【核心人物】{'；'.join(cast_parts)}",
             f"【站位声明】{standing_str}",
@@ -166,11 +177,16 @@ def compile_project_to_feed(state):
             out_lines.append(f"| 图{fno} | {aname} | 挂载 P2 产出的「{aname}」设定图 | {ctrl} | {no_ctrl} |")
         out_lines.append("")
 
-    return "\n".join(out_lines)
+    result = "\n".join(out_lines)
+    issues, warns = sd_core.verify_feed_against_state(result, state)
+    if issues:
+        raise ValueError("编译后状态对账失败：" + "；".join(issues))
+    return result
 
 
 def self_test():
     st = sd_core.default_project_state()
+    st["locks"]["confirmed"] = True  # Explicit synthetic test fixture, not user confirmation.
     feed_md = compile_project_to_feed(st)
     # 1. 对账校验
     iss_s, wrn_s = sd_core.verify_feed_against_state(feed_md, st)
@@ -181,23 +197,18 @@ def self_test():
         tmp_path = f.name
     try:
         vp_script = os.path.join(SCRIPT_DIR, "validate_prompt.py")
-        r1 = subprocess.run(
-            [sys.executable, vp_script, tmp_path, "--model", "2.5", "--state", "inline_check"],
-            capture_output=True,
-            text=True,
-        )
         # 用 --model 2.5 直接调用 validate_prompt.py
         r1 = subprocess.run(
             [sys.executable, vp_script, tmp_path, "--model", "2.5"],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         assert r1.returncode == 0, f"validate_prompt failed on compiled feed: {r1.stdout}\n{r1.stderr}"
         gc_script = os.path.join(os.path.dirname( os.path.dirname(SCRIPT_DIR) ), "sd-feed-engine", "scripts", "gate_check.py")
         r2 = subprocess.run(
             [sys.executable, gc_script, tmp_path, "--model", "2.5"],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8",
         )
         assert r2.returncode == 0, f"gate_check failed on compiled feed: {r2.stdout}\n{r2.stderr}"
     finally:
@@ -218,8 +229,12 @@ def main():
     if not args.state:
         ap.print_help()
         sys.exit(2)
-    state = json.load(open(args.state, encoding="utf-8"))
-    md = compile_project_to_feed(state)
+    try:
+        with open(args.state, encoding="utf-8") as handle:
+            state = json.load(handle)
+        md = compile_project_to_feed(state)
+    except (ValueError, OSError) as exc:
+        ap.error(str(exc))
     if args.out:
         with open(args.out, "w", encoding="utf-8") as f:
             f.write(md)

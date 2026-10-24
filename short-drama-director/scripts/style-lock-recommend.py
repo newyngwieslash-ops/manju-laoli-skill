@@ -179,6 +179,8 @@ def render(genre_text, top=4):
         print(f"\n{'ABCD'[i] if i < 4 else i+1} {tag}{name}向 · {native}        打斗 {fs} 特效 {xs}")
         print(f"   看：{look}")
         print(f"   易跑偏：{warn}")
+        if num == 36:
+            print("   完整卡与成品块：--select 36（确认选卡后读取）")
     print(f"\nD 自定义 → 你直接描述，我按你的描述建 STYLE_BIBLE")
     if excluded:
         names = " · ".join(f"{n}" for _, n, _ in excluded[:20])
@@ -187,6 +189,13 @@ def render(genre_text, top=4):
 
 
 if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from style_card_loader import run_selection_cli
+    if run_selection_cli(STYLES, render):
+        raise SystemExit(0)
+
     for g in ["15秒玄幻仙侠打斗对决，有法术特效",
               "都市情感夜戏，无打斗",
               "年代怀旧文戏，两个人回忆往事",

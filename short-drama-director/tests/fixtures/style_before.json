@@ -1,0 +1,81 @@
+{
+  "before_sha": "7f0996fc2b19ea59a91ae6b613120e2c3239330c",
+  "old_prompts": {
+    "9": "3b3b34aa60c14e0c58c578415f897cd64895c86e76262bead7853fb38a9c70cb",
+    "10": "ba81513bb6748e526bf3704c6a59eade0ec5cfe9eade3e421d942ad5a7086da2",
+    "7": "7ed625c92754a24cd70d6e92f848274515155cf59d4ee1b68c28bde792679790",
+    "12": "3d5ed5478839a8d5cb428614c17dfdfcb36a99ac2bad29d6e220656aafeab4ea",
+    "6": "0e097325616df747f12d7212da8aff6b6f20f34d8d872c485d69964595c0e908",
+    "1": "3c6e4a0b678ccd022afcb773f6d3468dd72ab1cd714bc2f1020ebc0d65e68153",
+    "33": "6752cee8be71895be473f61d1438c054d5f89d07451297239eb6e27aad8494f5",
+    "39": "851ea0329bb59ffa5b432dc1fccc08a54aad65fff3988583e8eb44e41ee4fd7e",
+    "52": "2a085bdc12c5dec056ac3c8426d9feda8660db61afe142140286db3126f5a64a",
+    "64": "4e5641c0b36ee5834dfca3a25a6d5f032e65dbbb1d9bd3ba1ffe6084fe21b871",
+    "65": "348d91563167f6a206d82e096e6f398500fa708c849a56813370acbc147082f2",
+    "66": "833689af1728feb6b2d05a256d4037b493500c01b6ff5bb660243ec600f42945",
+    "71": "79f6c19f6b0860e10effdc33d2365f240b855a9ea597fa4323d579349774c345",
+    "72": "cc2c9abc6c090f23729cc91635644dd06dea793ef5202128432a78896c131b6a"
+  },
+  "recommendations": [
+    {
+      "entry": "style-lock-ladder",
+      "genre": "玄幻仙侠打斗，有法术特效",
+      "sha256": "35db3378162097ec8997e6c43d7c318973c4d77466e1c72fd06a3b5f8bbe3a0b"
+    },
+    {
+      "entry": "style-lock-ladder",
+      "genre": "都市情感夜戏，无打斗",
+      "sha256": "eaebb2c206dc63fc600b9ac2b0eae99b9ef4e64ca57ffeed8706c714dc74addd"
+    },
+    {
+      "entry": "style-lock-ladder",
+      "genre": "真人 科幻 巨物 结构 战争",
+      "sha256": "96af6df287c556b3af49f766dcb6d3fa8d915abbb8eb669c6fb4505b90edf3c5"
+    },
+    {
+      "entry": "style-lock-ladder",
+      "genre": "水墨 悬疑 犯罪",
+      "sha256": "120a379201fac4d75c0e8ba8b2bf4960adbcc607b52cbc3c513d4fe79abb03fb"
+    },
+    {
+      "entry": "style-lock-ladder",
+      "genre": "现代都市悬疑，追车加近身格斗",
+      "sha256": "e30d9b82ee59a135376fc70a4e49a58f11a9f25d32ba8e8001ed5279e8a28add"
+    },
+    {
+      "entry": "style-lock-ladder",
+      "genre": "年代怀旧文戏，两个人回忆往事",
+      "sha256": "3098c036616329f290e0db87a0e41db7cfd1234f810a5bc2aa0efd2d82ca83be"
+    },
+    {
+      "entry": "style-lock-recommend",
+      "genre": "玄幻仙侠打斗，有法术特效",
+      "sha256": "d7428f23cfebc2e613031f0503bf04ac73d6df2ff20983ec231f23de97182757"
+    },
+    {
+      "entry": "style-lock-recommend",
+      "genre": "都市情感夜戏，无打斗",
+      "sha256": "648904a25317488789aebf8236c7c163933fb59913b4dcf31924181d6f9e69e4"
+    },
+    {
+      "entry": "style-lock-recommend",
+      "genre": "真人 科幻 巨物 结构 战争",
+      "sha256": "8eff7fbc1b9a3a496575e15be6e10222bfe83e40c1201bd190cf35a40f5dd588"
+    },
+    {
+      "entry": "style-lock-recommend",
+      "genre": "水墨 悬疑 犯罪",
+      "sha256": "4a12d190663d6be37ad90f12fa0895e1f245c933c7a2a60eb06941ccecb7ea94"
+    },
+    {
+      "entry": "style-lock-recommend",
+      "genre": "现代都市悬疑，追车加近身格斗",
+      "sha256": "c3be220ba94b9a9e387f6480fb607b667e2c3cbe4594e24068a52a2cda774b6b"
+    },
+    {
+      "entry": "style-lock-recommend",
+      "genre": "年代怀旧文戏，两个人回忆往事",
+      "sha256": "cd71d4804852fc4eeb8995143abd867dcaa9b295170029af8fa20ad90af0bf5c"
+    }
+  ]
+}

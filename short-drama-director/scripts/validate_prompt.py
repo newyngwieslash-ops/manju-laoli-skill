@@ -266,7 +266,8 @@ import os
 import re
 import sys
 
-LIMITS = {"2.5": 30, "2.0": 15}
+from model_contract import MODEL_LIMITS
+LIMITS = {k: MODEL_LIMITS[k] for k in ("2.5", "2.0")}
 # C4 篇级字符兜底：单个投喂稿文件 ≤4500 字符（≠ 段级字数闸门）。
 #   段级红线（投喂单元 ≤1900 字 / 2000 硬上限）由 sd-feed-engine/scripts/gate_check.py「闸门3」逐单元判。
 #   本判据按整份文件 len() 计（含标点/格式符）；假设「一个文件 = 一个投喂单元」，多单元合成一文件时会超限，以 gate_check 段级判定为准。
@@ -5059,6 +5060,25 @@ def main():
             sys.exit(3)
         issues, warns, stats = validate(text, model, opt("--mode", "new"), track, combat, c23,
                                         style_source, aspect, plugin=plugin, state_data=state_data)
+    # 2026-10-14 交付契约与权威源自动核销（防外部 Agent 拿 P4 格式 PASSED 当全流程任务完成）
+    _is_project_doc = bool(re.search(r"^#{1,3}\s+", text, re.M)) and len(text) > 1500
+    _force_contract = "--contract" in argv
+    if _is_project_doc or _force_contract:
+        try:
+            import audit_contract as _ac
+            _c_iss, _c_warns, _c_pass = _ac.audit_markdown(text, mode="full", director=style_source, state=state_data)
+            if _c_iss:
+                if _force_contract:
+                    for _ci in _c_iss:
+                        issues.append("C31 " + _ci)
+                else:
+                    warns.append(
+                        f"C31 交付契约未闭环（检出 {len(_c_iss)} 项文档级硬产出或权威源模板缺失——"
+                        "validate_prompt 仅验 P4 投喂语法，严禁拿格式 PASSED 当任务完成！请运行 "
+                        "`python3 scripts/audit_contract.py <稿>.md` 核销）：" + "；".join(_c_iss[:4])
+                    )
+        except (ValueError, OSError, TypeError) as exc:
+            issues.append(f"C31 契约检查失败：{exc}")
     if "--json" in argv:
         print(json.dumps({"issues": issues, "warnings": warns, "stats": stats,
                           "track": track, "c14_exempt": track in NARR_TRACKS,
@@ -5078,25 +5098,6 @@ def main():
         if model != "h3" and _c23_on(text, c23, style_source):
             print("[i] 画风锁已启用：C23 段8/9 · 区间越界 · 零人名 · 题材匹配 · 单镜超载"
                   + (f"（来源：{style_source}）" if style_source else "（auto）"))
-        # 2026-10-14 交付契约与权威源自动核销（防外部 Agent 拿 P4 格式 PASSED 当全流程任务完成）
-        _is_project_doc = bool(re.search(r"^#{1,3}\s+", text, re.M)) and len(text) > 1500
-        _force_contract = "--contract" in argv
-        if _is_project_doc or _force_contract:
-            try:
-                import audit_contract as _ac
-                _c_iss, _c_warns, _c_pass = _ac.audit_markdown(text, mode="full", director=style_source)
-                if _c_iss:
-                    if _force_contract:
-                        for _ci in _c_iss:
-                            issues.append("C31 " + _ci)
-                    else:
-                        warns.append(
-                            f"C31 交付契约未闭环（检出 {len(_c_iss)} 项文档级硬产出或权威源模板缺失——"
-                            "validate_prompt 仅验 P4 投喂语法，严禁拿格式 PASSED 当任务完成！请运行 "
-                            "`python3 scripts/audit_contract.py <稿>.md` 核销）：" + "；".join(_c_iss[:4])
-                        )
-            except Exception:
-                pass
         # 2026-10-14 实拍必崩高危红线升级为 CLI 硬阻断（防外部 Agent 顶着比喻具象化/双胞胎视线点名/跨窗递伞穿模/全能参考二次复述外貌/打戏静态架招等高危警告照拿 PASSED 交差；如需仅看警告可传 --allow-warn）
         FATAL_WARN_PREFIXES = (
             "C2d", "C20c", "C20f", "C20g", "C20h", "C20i", "C20j", "C20k", "C20l", "C20m",

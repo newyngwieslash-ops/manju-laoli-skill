@@ -3,6 +3,11 @@ import argparse
 import json
 import math
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "sd-feed-engine/scripts"))
+from script_feed_diff import structured
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "short-drama-director/scripts"))
+from model_contract import MODEL_LIMITS
 
 ROOT_FIELDS = {
     "schema_version", "artifact_type", "project_id", "stage_id",
@@ -82,13 +87,13 @@ def validate(data):
     if not isinstance(payload, dict):
         return errors + ["payload must be an object"]
     profile = payload.get("target_profile")
-    max_allowed = 15
+    max_allowed = MODEL_LIMITS["2.0"]
     if not isinstance(profile, dict):
         errors.append("payload.target_profile must be an object")
     else:
         pname = profile.get("name")
         if pname in ("SEEDANCE_2_5", "SEEDANCE_2.5"):
-            max_allowed = 30
+            max_allowed = MODEL_LIMITS["2.5"]
         elif pname != "SEEDANCE_2":
             errors.append("payload.target_profile.name must be SEEDANCE_2 or SEEDANCE_2_5")
         maximum = profile.get("max_segment_seconds")
@@ -250,6 +255,10 @@ def validate(data):
             errors.append(
                 f"{dialogue_label} has no matching dialogue continuation in {target_id}"
             )
+    try:
+        structured(data)
+    except ValueError as exc:
+        errors.append(f"dialogue conservation structure: {exc}")
     return errors
 
 

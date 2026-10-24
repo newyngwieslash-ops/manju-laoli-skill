@@ -18,8 +18,7 @@ import re
 import sys
 
 # ---- 模型契约唯一常量（与 references/model-adapters.md §5 同源）----
-MODEL_LIMITS = {"2.5": 30, "2.0": 15, "h3": 15}
-WORD_LIMITS = {"2.5": (2600, 3000), "2.0": (1900, 2000), "h3": (1900, 2000)}
+from model_contract import MODEL_LIMITS, WORD_LIMITS
 SEVEN_SEGMENTS = (
     "【画幅风格】",
     "【场景资产】",
@@ -98,6 +97,7 @@ def default_project_state():
         "schema_version": "7.4.20",
         "project_name": "示例短剧项目",
         "locks": {
+            "confirmed": False,  # Template is not user approval.
             "track": "1",
             "source": "1",
             "model": "2.5",
@@ -136,6 +136,7 @@ def default_project_state():
         "characters": {
             "林风": {
                 "id": "CHR-01",
+                "voice_id": "V1",
                 "fig_no": 1,
                 "age_anchor": "26~28岁男性",
                 "body_anchor": "身高182cm，肩宽腰窄精悍体态",
@@ -148,6 +149,7 @@ def default_project_state():
             },
             "陈枭": {
                 "id": "CHR-02",
+                "voice_id": "V2",
                 "fig_no": 2,
                 "age_anchor": "45~50岁男性",
                 "body_anchor": "身高178cm，宽厚微沉体态",
@@ -158,6 +160,7 @@ def default_project_state():
                 "address_map": {"林风": "小疯子"},
                 "char_states": {
                     "seg_1_detached": {
+                        "segments": ["段1"],
                         "item": "金丝半框眼镜",
                         "action": "摘下金丝半框眼镜捏在指间",
                         "consequence": "鼻梁两侧留有浅红压痕",
@@ -185,6 +188,11 @@ def default_project_state():
         "segments": [
             {
                 "seg_id": "段1",
+                "cast": ["林风", "陈枭"],
+                "props": ["旧怀表"],
+                "entry_state": {"林风": {"position": "走廊"}, "陈枭": {"position": "铁门前", "glasses": "佩戴"}, "旧怀表": {"holder": "林风", "hand": "左手"}, "地下拳馆走廊": {"lighting": "冷白顶灯"}},
+                "exit_state": {"林风": {"position": "走廊"}, "陈枭": {"position": "铁门前", "glasses": "摘下持于指间"}, "旧怀表": {"holder": "林风", "hand": "左手"}, "地下拳馆走廊": {"lighting": "冷白顶灯"}},
+                "state_changes": [{"entity": "陈枭", "phase": "within", "before": {"position": "铁门前", "glasses": "佩戴"}, "after": {"position": "铁门前", "glasses": "摘下持于指间"}, "reason": "首镜摘下眼镜", "shot_no": 1}],
                 "scene": "地下拳馆走廊",
                 "segment_type": "战斗动作段",
                 "emotion_anchor_id": "E04",
@@ -203,6 +211,7 @@ def default_project_state():
                 "shots": [
                     {
                         "no": 1,
+                        "dialogue_slices": [{"dialogue_id": "D1", "speaker_id": "CHR-01", "voice_id": "V1", "exact_text": "陈会长，这表你认得吧？", "integrity": "WHOLE"}],
                         "start": 0,
                         "end": 4,
                         "spec": "中近景 · 侧45度 · 极缓慢推",
@@ -212,6 +221,7 @@ def default_project_state():
                     },
                     {
                         "no": 2,
+                        "dialogue_slices": [],
                         "start": 4,
                         "end": 9,
                         "spec": "中景 · 正侧 · 跟移",
@@ -221,6 +231,7 @@ def default_project_state():
                     },
                     {
                         "no": 3,
+                        "dialogue_slices": [],
                         "start": 9,
                         "end": 14,
                         "spec": "全景 · 略仰 · 缓慢拉远",

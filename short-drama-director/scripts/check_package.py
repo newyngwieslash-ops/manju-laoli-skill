@@ -173,7 +173,7 @@ def read(path):
 
 
 def rel(p):
-    return os.path.relpath(p, PKG)
+    return os.path.relpath(p, PKG).replace(os.sep, "/")
 
 
 def scan_md_files():
@@ -1286,8 +1286,11 @@ _e18_asa = read(os.path.join(PKG, "sd-asset-engine", "SKILL.md"))
 check("㊾ 互锁①：末镜台词静默预算在案（预算 = 镜长 − 1s · 末 1 秒禁台词 · 三个解法）",
       "末镜台词静默预算" in _splic and "末 1 秒（硬定格区）禁台词" in _splic
       and "末镜台词字数预算 = (镜长 − 1 − 标点停顿) × 语速档" in _splic)
-check("㊾ 互锁②：闸门3 已按模型分档（文档 + gate_check.py 实现两侧）",
-      "Seedance 2.5 放宽到 ≤2600" in _fmg and "w_soft, w_hard = (2600, 3000) if a.model == '2.5'" in _gck)
+from model_contract import WORD_LIMITS, sync as check_model_docs
+check("㊾ 互锁②：闸门3 读取单一模型策略且文档生成表一致",
+      "Seedance 2.5 放宽到 ≤2600" in _fmg and "w_soft, w_hard = WORD_LIMITS[a.model]" in _gck
+      and WORD_LIMITS == {"2.5": (2600, 3000), "2.0": (1900, 2000), "h3": (1900, 2000)}
+      and not check_model_docs())
 check("㊾ 互锁③：闸门2 末镜特判在 gate_check.py 落地（budget = hit − 1 + 点名提示）",
       "budget = hit - 1 if is_last else hit" in _gck
       and "定格期被台词占用" in _gck)
@@ -2323,8 +2326,8 @@ check("◓15 D锁首项独立弹出「① 末帧定格承接」且清零旧「�
       "① 末帧定格承接" in skill and "①+② 为连续剧情多段的默认组合" not in skill and "禁止合并为①+②" in skill)
 _dpl = read(os.path.join(_sb_dir, "director-param-library.md"))
 _spb = read(os.path.join(_sb_dir, "style-prefix-blocks.md"))
-check("◓16 画风锁参数库与成品块已补齐路阳+国漫3D仙侠/游戏CG/3D进阶水墨/东方神话3D等 14 张主力卡完整 11 槽位",
-      all(k in _dpl and k in _spb for k in ("徐克", "王家卫", "路阳", "袁和平", "乌尔善", "张艺谋", "朴赞郁", "大卫·芬奇", "罗杰·狄金斯", "MAPPA", "国漫3D仙侠", "暗黑神话游戏CG", "国漫3D进阶水墨", "东方神话3D奇幻")))
+check("◓16 画风锁参数库与成品块已补齐路阳+国漫3D仙侠/游戏CG/3D进阶水墨/东方神话3D及诺兰、押井守等 16 张主力卡完整 11 槽位",
+      all(k in _dpl and k in _spb for k in ("徐克", "王家卫", "路阳", "袁和平", "乌尔善", "张艺谋", "朴赞郁", "大卫·芬奇", "罗杰·狄金斯", "MAPPA", "国漫3D仙侠", "暗黑神话游戏CG", "国漫3D进阶水墨", "东方神话3D奇幻", "诺兰", "押井守")))
 _sbl_txt = read(os.path.join(BASE, "references", "storyboard-board-lite.md"))
 check("◓17 看板契约与 model-adapters 已清除「不另写文字描述/P2.5空壳占位」误导并强制挂接 sd-asset-engine 三模板",
       "character-portrait-templates.md" in _sbl_txt and "scene-grid-template.md" in _sbl_txt and "prop-template.md" in _sbl_txt
@@ -2443,9 +2446,14 @@ check("◔8 参数库章节号唯一（防「十二/十三/十四 各出现两�
 _rest = re.search(r"其余\s*(\d+)\s*组的扩展补录模板", _par)
 _rest = int(_rest.group(1)) if _rest else -1
 _main_cards = len(re.findall(r"^\|\s*\*\*\d+ [^|]+\|\s*T\d\s", _par, re.M))
-check("◔9 参数库补录算式自洽：其余 N == 选卡表卡数 − 已参数化主力卡数",
-      _rest == _cat_total - _main_cards and _main_cards > 0,
-      f"其余 {_rest} 组 vs 实算 {_cat_total} − {_main_cards} = {_cat_total - _main_cards}")
+from style_card_loader import CARD_ALIASES
+_core_ids = {int(x) for x in re.findall(r"^\|\s*\*\*(\d+) [^|]+\|\s*T\d\s", _par, re.M)}
+_catalog_ids = {int(x) for x in re.findall(r"^\|\s*(\d+)\s*\|", _cat, re.M)}
+_aliases_valid = all(a in _catalog_ids and a not in _core_ids and c in _core_ids
+                     for a, c in CARD_ALIASES.items())
+check("◔9 参数库补录算式自洽：其余 N == 目录数 − 核心卡数 − 兼容别名数",
+      _aliases_valid and _rest == _cat_total - _main_cards - len(CARD_ALIASES) and _main_cards > 0,
+      f"其余 {_rest} 组 vs {_cat_total} − {_main_cards} − {len(CARD_ALIASES)}")
 
 # ---- ④ 跨文件数字唯一 + 红线 2 交叉引用 ----
 check("◔10 全包不得残留「72 组」旧口径（选卡表已 74 组）",
@@ -2498,6 +2506,15 @@ _name_drift = [(n, nm, _cat_map[n]) for n, nm in _lad_pairs.items()
 check("◔16 ladder STYLES 卡名与选卡表目录同号位一致（堵 #61「引擎锡兰 vs 目录斯文·尼奎斯特」类漂移）",
       not _name_drift,
       "卡名漂移: " + "; ".join(f"#{n} {nm}≠{c}" for n, nm, c in _name_drift))
+
+# Selected-card contract: exercise real CLIs and the existing C23 parser.
+_style_tests = subprocess.run(
+    [sys.executable, "-m", "unittest", "discover", "-s", os.path.join(BASE, "tests")],
+    capture_output=True, text=True)
+if _style_tests.returncode:
+    print(_style_tests.stdout + _style_tests.stderr)
+    sys.exit(_style_tests.returncode)
+print("[+] 完整风格卡 CLI 回归通过")
 
 # ---------------------------------------------------------------- 汇总
 print()

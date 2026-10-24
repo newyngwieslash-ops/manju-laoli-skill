@@ -1,0 +1,17 @@
+{
+  "payload": {
+    "segments": [
+      {
+        "dialogue_slices": [
+          {
+            "dialogue_id": "D1",
+            "speaker_id": "CHR-01",
+            "voice_id": "V1",
+            "exact_text": "陈会长，这表你认得吧？",
+            "integrity": "WHOLE"
+          }
+        ]
+      }
+    ]
+  }
+}

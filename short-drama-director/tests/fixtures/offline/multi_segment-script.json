@@ -1,0 +1,16 @@
+{
+  "dialogues": [
+    {
+      "dialogue_id": "D1",
+      "speaker_id": "CHR-01",
+      "voice_id": "V1",
+      "exact_text": "陈会长，这表你认得吧？"
+    },
+    {
+      "dialogue_id": "D2",
+      "speaker_id": "CHR-03",
+      "voice_id": "V3",
+      "exact_text": "都在这里。"
+    }
+  ]
+}

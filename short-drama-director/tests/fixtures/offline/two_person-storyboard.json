@@ -1,0 +1,24 @@
+{
+  "payload": {
+    "segments": [
+      {
+        "dialogue_slices": [
+          {
+            "dialogue_id": "D1",
+            "speaker_id": "CHR-01",
+            "voice_id": "V1",
+            "exact_text": "请等一下。",
+            "integrity": "WHOLE"
+          },
+          {
+            "dialogue_id": "D2",
+            "speaker_id": "CHR-02",
+            "voice_id": "V2",
+            "exact_text": "我在这里。",
+            "integrity": "WHOLE"
+          }
+        ]
+      }
+    ]
+  }
+}
