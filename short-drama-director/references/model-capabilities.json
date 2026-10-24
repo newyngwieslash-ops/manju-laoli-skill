@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "profiles": {
+    "2.5": {
+      "provider": "ByteDance",
+      "model": "2.5",
+      "task_mode": "project_text_validation",
+      "source": [
+        {
+          "kind": "repository-baseline",
+          "commit": "e95a437db944f58813198fff9cb1973c36e01ef8",
+          "path": "short-drama-director/scripts/sd_core.py"
+        }
+      ],
+      "checked_at": "2026-10-24",
+      "evidence_status": "project_policy_only_official_pending",
+      "official_limits": null,
+      "project_policy": {
+        "max_segment_seconds": 30,
+        "soft_chars": 2600,
+        "hard_chars": 3000
+      },
+      "compiler_format": "seven_sections"
+    },
+    "2.0": {
+      "provider": "ByteDance",
+      "model": "2.0",
+      "task_mode": "project_text_validation",
+      "source": [
+        {
+          "kind": "repository-baseline",
+          "commit": "e95a437db944f58813198fff9cb1973c36e01ef8",
+          "path": "short-drama-director/scripts/sd_core.py"
+        }
+      ],
+      "checked_at": "2026-10-24",
+      "evidence_status": "project_policy_only_official_pending",
+      "official_limits": null,
+      "project_policy": {
+        "max_segment_seconds": 15,
+        "soft_chars": 1900,
+        "hard_chars": 2000
+      },
+      "compiler_format": "seven_sections"
+    },
+    "h3": {
+      "provider": "MiniMax",
+      "model": "h3",
+      "task_mode": "project_text_validation",
+      "source": [
+        {
+          "kind": "repository-baseline",
+          "commit": "e95a437db944f58813198fff9cb1973c36e01ef8",
+          "path": "short-drama-director/scripts/sd_core.py"
+        }
+      ],
+      "checked_at": "2026-10-24",
+      "evidence_status": "project_policy_only_official_pending",
+      "official_limits": null,
+      "project_policy": {
+        "max_segment_seconds": 15,
+        "soft_chars": 1900,
+        "hard_chars": 2000
+      },
+      "compiler_format": null
+    }
+  }
+}

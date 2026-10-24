@@ -26,6 +26,68 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(result.returncode,0,result.stderr)
             result=subprocess.run([sys.executable,str(SUITE/'sd-feed-engine/scripts/script_feed_diff.py'),'--script',str(FIX/f'{kind}-script.json'),'--storyboard',str(FIX/f'{kind}-storyboard.json'),'--feed',str(FIX/f'{kind}-feed-dialogues.json')],capture_output=True,text=True,encoding='utf-8')
             self.assertEqual(result.returncode,0,result.stderr)
+    def test_actual_compiled_dialogue_matches_source(self):
+        for kind in ('two_person','prop_action','multi_segment'):
+            state=fixture(kind)
+            with tempfile.TemporaryDirectory() as d:
+                path=Path(d)/'actual.md';path.write_text(compile_project_to_feed(state),encoding='utf-8')
+                actual=dlg.text_rows(path,','.join(state['characters']))
+            expected=dlg.read_rows(FIX/f'{kind}-script.json')
+            names={a['id']:n for n,a in state['characters'].items()}
+            self.assertEqual([(r[1],r[3]) for r in actual],[(names[r[1]],r[3]) for r in expected])
+
+    def test_review_mutations_fail_closed(self):
+        mutations=[lambda s:s['locks'].update(track='unknown'),
+                   lambda s:s['segments'][0]['entry_state']['林风'].update(position=None),
+                   lambda s:s['segments'][0]['state_changes'].append({'entity':'不存在','phase':'madeup','shot_no':99,'reason':''}),
+                   lambda s:s['segments'][0]['shots'][0].update(dialogue='【陌生人（平静）：“请等一下。”】'),
+                   lambda s:s['segments'][0]['shots'][0]['dialogue_slices'][0].update(voice_id='OTHER'),
+                   lambda s:s.update(receipt=[]),
+                   lambda s:s['segments'][0]['shots'][1]['dialogue_slices'][0].update(dialogue_id='D1')]
+        for mutation in mutations:
+            state=fixture();mutation(state)
+            with self.assertRaises(ValueError):compile_project_to_feed(state)
+        state=fixture('multi_segment');state['segments'][1]['state_changes'][0]['handoff_ref']='不存在'
+        self.assertTrue(validate_state(state))
+        state=fixture();state['receipt']=None
+        self.assertIn('未提供读取记录',compile_project_to_feed(state))
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'script.md';path.write_text('甲：保留。\n乙：漏掉。\n',encoding='utf-8')
+            with self.assertRaises(ValueError):dlg.text_rows(path,'甲')
+
+    def test_typed_stage_records_and_file_mutation(self):
+        import hashlib
+        from unittest.mock import patch
+        import project_contract
+        state=fixture();state['receipt']={}
+        with tempfile.TemporaryDirectory() as d, patch.object(project_contract,'SUITE',Path(d)):
+            root=Path(d);records={stage:[] for stage in ('P0','P1','P2','P3','P4','P5')}
+            def add(stage,entity,payload=None,text=None):
+                path=root/f'{stage}-{entity}.json'
+                if text is None:text=json.dumps({'stage_id':stage,'entity_id':entity,'payload':payload},ensure_ascii=False)
+                path.write_text(text,encoding='utf-8')
+                records[stage].append({'entity_id':entity,'artifact_ref':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'summary':'Synthetic offline structural fixture'})
+            add('P0','PROJECT',{'locks':state['locks']})
+            for table in ('characters','scenes','props'):
+                for asset in state[table].values():
+                    add('P1',asset['id'],{'asset':asset})
+                    add('P2',asset['id'],{'asset_id':asset['id'],'views':['正面'],'appearance':['沿用资产主档'],'negative_prompt':['无水印']})
+            for seg in state['segments']:
+                add('P3',seg['seg_id'],{'segment':seg})
+                add('P5',seg['seg_id'],{**{k:seg[k] for k in ('entry_state','exit_state','state_changes')},'unresolved_conflicts':[]})
+            add('P4','PROJECT',text=compile_project_to_feed(state))
+            state['stage_records']=records
+            self.assertEqual(validate_stage_records(state),[])
+            (root/'P4-PROJECT.json').write_text('伪造关键词',encoding='utf-8')
+            self.assertTrue(validate_stage_records(state))
+
+    def test_stage_readme_hash_cannot_fake_typed_artifacts(self):
+        import hashlib
+        state=fixture();path=SUITE/'README.md'
+        record={'entity_id':'PROJECT','artifact_ref':'README.md','sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'summary':'dummy'}
+        state['stage_records']={stage:[record] for stage in ('P0','P1','P2','P3','P4','P5')}
+        self.assertTrue(validate_stage_records(state))
+
     def test_vertical_fractional_and_scope(self):
         state=fixture();text=compile_project_to_feed(state)
         self.assertIn('9:16 竖屏',text);self.assertNotIn('横屏',text);self.assertIn('00:03.5-00:07.5',text)

@@ -53,12 +53,19 @@ def text_rows(path,names):
     pattern='|'.join(re.escape(x.strip()) for x in names.split(',') if x.strip())
     if not pattern:raise ValueError('names 不能为空')
     rows=[]
+    allowed={x.strip() for x in names.split(',') if x.strip()}
     for line in text.splitlines():
         # Dialogue cue can occur inline in a shot, or as a script line.
-        if '台词：' in line:line=line.split('台词：',1)[1]
+        cue='台词：' in line
+        if not cue and line.lstrip().startswith(('#','>','【','|','```')):continue
+        if cue:line=line.split('台词：',1)[1]
+        possible=re.match(r'^(?:【)?([^：:（(]+)(?:[（(][^）)]*[）)])?\s*[：:]',line.strip())
+        if possible and possible.group(1).strip() not in allowed:
+            raise ValueError('发现未在 --names 登记的疑似说话人；请提供完整名单或使用 JSON')
         m=re.search(r'(?:^|【)('+pattern+r')(?:[（(][^）)]*[）)])?\s*[：:]\s*(.+)',line)
         if m:
-            body=m.group(2).strip().rstrip('。')
+            body=m.group(2).strip()
+            if '】' in body:body=body[:body.rfind('】')+1]
             body=body.rstrip('】').strip().strip('“”"')
             if not body:raise ValueError('空台词')
             rows.append((str(len(rows)+1),m.group(1),'text-unverified',body))

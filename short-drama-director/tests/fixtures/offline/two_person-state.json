@@ -50,7 +50,8 @@
       "address_map": {
         "陈枭": "陈会长"
       },
-      "char_states": {}
+      "char_states": {},
+      "voice_id": "V1"
     },
     "陈枭": {
       "id": "CHR-02",
@@ -73,7 +74,8 @@
           "action": "摘下金丝半框眼镜捏在指间",
           "consequence": "鼻梁两侧留有浅红压痕"
         }
-      }
+      },
+      "voice_id": "V2"
     }
   },
   "scenes": {
@@ -166,7 +168,16 @@
           "spec": "中景 · 平视 · 固定",
           "action": "@林风 看向 @陈枭，伸手示意停下",
           "sound": "无",
-          "dialogue": "【林风（平静）：“请等一下。”】"
+          "dialogue": "【林风（平静）：“请等一下。”】",
+          "dialogue_slices": [
+            {
+              "dialogue_id": "D1",
+              "speaker_id": "CHR-01",
+              "voice_id": "V1",
+              "exact_text": "请等一下。",
+              "integrity": "WHOLE"
+            }
+          ]
         },
         {
           "no": 2,
@@ -175,7 +186,16 @@
           "spec": "中景 · 平视 · 固定",
           "action": "@陈枭 摘下眼镜，向 @林风 点头",
           "sound": "无",
-          "dialogue": "【陈枭（平静）：“我在这里。”】"
+          "dialogue": "【陈枭（平静）：“我在这里。”】",
+          "dialogue_slices": [
+            {
+              "dialogue_id": "D2",
+              "speaker_id": "CHR-02",
+              "voice_id": "V2",
+              "exact_text": "我在这里。",
+              "integrity": "WHOLE"
+            }
+          ]
         }
       ],
       "sfx_summary": "拳肉闷响、鞋底擦过湿水泥地声、粗重呼吸声，无BGM"

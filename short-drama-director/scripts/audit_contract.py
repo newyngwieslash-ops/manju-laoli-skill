@@ -30,7 +30,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(SCRIPT_DIR)
 SUITE_DIR = os.path.dirname(BASE_DIR)
 
-from style_card_loader import load_card, CARD_ALIASES, STYLE_DIR
+from style_card_loader import load_card, render_selection, CARD_ALIASES, INHERITED_RANGE_IDS, STYLE_DIR
 
 
 def resolve_director(value):
@@ -55,11 +55,13 @@ def resolve_director(value):
 def check_style(text, value):
     try:
         sid, card, prompt = resolve_director(value)
-        # Match complete source blocks; inherited ranges must be concrete, never placeholders.
-        pattern = re.escape(prompt)
-        pattern = pattern.replace(re.escape("{{LIGHT_RANGE}}"), r"\[1:[0-9.]+, 1:[0-9.]+\]")
-        pattern = pattern.replace(re.escape("{{LENS_RANGE}}"), r"\[[0-9]+mm, [0-9]+mm\]")
-        if not re.search(pattern, text):
+        if CARD_ALIASES.get(sid, sid) in INHERITED_RANGE_IDS:
+            light = re.search(r"影调区间：光比 \[1:([0-9.]+), 1:([0-9.]+)\]", text)
+            lens = re.search(r"光学区间：镜头 \[([0-9]+)mm, ([0-9]+)mm\]", text)
+            if not light or not lens:
+                raise ValueError("缺少项目确认的可解析区间")
+            prompt = render_selection(sid, "prompt", list(light.groups()), list(lens.groups()))
+        if prompt not in text:
             raise ValueError("缺少所选卡完整 STYLE/PERFORMANCE 原文（项目区间须填实）")
         return None
     except (ValueError, OSError) as exc:

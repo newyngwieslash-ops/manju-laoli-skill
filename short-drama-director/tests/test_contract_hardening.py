@@ -27,3 +27,8 @@ class ContractTests(unittest.TestCase):
         out=io.StringIO()
         with contextlib.redirect_stdout(out):audit.print_init_checklist(director='28')
         self.assertIn('--select 28',out.getvalue());self.assertNotIn('--card ',out.getvalue())
+
+    def test_invalid_ranges_rejected(self):
+        prompt=loader.render_selection(68,'prompt',[2,6],[35,50])
+        for broken in (prompt.replace('[1:2, 1:6]','[1:0, 1:0]'),prompt.replace('[35mm, 50mm]','[99mm, 1mm]')):
+            self.assertIsNotNone(audit.check_style(broken,68))

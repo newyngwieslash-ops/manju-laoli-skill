@@ -37,7 +37,7 @@ def compile_project_to_feed(state):
     style_card = locks.get("style_card", "电影级写实质感")
     wa = state.get("world_anchor", {})
     era = wa.get("era_anchor", "现代")
-    receipt = state.get("receipt", {})
+    receipt = state.get("receipt") or {}
     plugins = receipt.get("active_plugins", [])
     read_refs = read_receipt(receipt)
     fps = receipt.get("fingerprints", [])

@@ -1286,8 +1286,11 @@ _e18_asa = read(os.path.join(PKG, "sd-asset-engine", "SKILL.md"))
 check("㊾ 互锁①：末镜台词静默预算在案（预算 = 镜长 − 1s · 末 1 秒禁台词 · 三个解法）",
       "末镜台词静默预算" in _splic and "末 1 秒（硬定格区）禁台词" in _splic
       and "末镜台词字数预算 = (镜长 − 1 − 标点停顿) × 语速档" in _splic)
-check("㊾ 互锁②：闸门3 已按模型分档（文档 + gate_check.py 实现两侧）",
-      "Seedance 2.5 放宽到 ≤2600" in _fmg and "w_soft, w_hard = (2600, 3000) if a.model == '2.5'" in _gck)
+from model_contract import WORD_LIMITS, sync as check_model_docs
+check("㊾ 互锁②：闸门3 读取单一模型策略且文档生成表一致",
+      "Seedance 2.5 放宽到 ≤2600" in _fmg and "w_soft, w_hard = WORD_LIMITS[a.model]" in _gck
+      and WORD_LIMITS == {"2.5": (2600, 3000), "2.0": (1900, 2000), "h3": (1900, 2000)}
+      and not check_model_docs())
 check("㊾ 互锁③：闸门2 末镜特判在 gate_check.py 落地（budget = hit − 1 + 点名提示）",
       "budget = hit - 1 if is_last else hit" in _gck
       and "定格期被台词占用" in _gck)

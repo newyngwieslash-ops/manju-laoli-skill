@@ -266,7 +266,8 @@ import os
 import re
 import sys
 
-LIMITS = {"2.5": 30, "2.0": 15}
+from model_contract import MODEL_LIMITS
+LIMITS = {k: MODEL_LIMITS[k] for k in ("2.5", "2.0")}
 # C4 篇级字符兜底：单个投喂稿文件 ≤4500 字符（≠ 段级字数闸门）。
 #   段级红线（投喂单元 ≤1900 字 / 2000 硬上限）由 sd-feed-engine/scripts/gate_check.py「闸门3」逐单元判。
 #   本判据按整份文件 len() 计（含标点/格式符）；假设「一个文件 = 一个投喂单元」，多单元合成一文件时会超限，以 gate_check 段级判定为准。

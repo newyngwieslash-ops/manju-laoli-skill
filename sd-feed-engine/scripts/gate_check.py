@@ -23,6 +23,9 @@ gate_check.py · 六道闸门校验器（判定口径修正 · 闸门6 扩展素
     出现"已核验/核对一致"类断言而形态非 M2 → FAIL（虚假核验）。
 """
 import re, sys, io, os, argparse
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "short-drama-director/scripts"))
+from model_contract import WORD_LIMITS
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -343,7 +346,7 @@ def main():
                     f'最快 {need_fast:.1f}s，可用 {budget}s{tail_note} → 需快念（非缺陷，不触发精简）')
 
         # 闸门3 字数（★ 2026-10-13：按模型分档 —— 2.5 可吃更长提示词）
-        w_soft, w_hard = (2600, 3000) if a.model == '2.5' else (1900, 2000)
+        w_soft, w_hard = WORD_LIMITS[a.model]
         if chars > w_hard:
             fails.append(f'闸门3 段{ui}：字数 {chars} > {w_hard}（model={a.model} 硬上限），必须压缩')
         elif chars > w_soft:
